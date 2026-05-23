@@ -83,7 +83,7 @@
     <button class="add-row-btn" onclick="addRow()">+ Add Role</button>
     <button class="add-row-btn" onclick="exportData()">📤 Export JSON</button>
     <button class="add-row-btn" onclick="importFromFile()">📥 Import JSON</button>
-    <button class="add-row-btn" onclick="loadDefaultData()" style="color:#2563eb">Load Initial Data</button>
+    <button class="add-row-btn" onclick="resetToInitial()" style="color:#2563eb">Reset to Initial Data</button>
   </div>
 </div>
 
@@ -94,12 +94,20 @@ const STATUS_CLASS = {Interested:'s-interested',Applied:'s-applied',Interview:'s
 let jobs = [];
 let currentFilter = 'all';
 
-// Load from localStorage
-function loadData() {
-  const saved = localStorage.getItem('xavierJobTracker');
-  if (saved) {
-    jobs = JSON.parse(saved);
-  } else {
+async function loadInitialData() {
+  try {
+    const res = await fetch('jobs.json');
+    const initialJobs = await res.json();
+    
+    const saved = localStorage.getItem('xavierJobTracker');
+    if (saved) {
+      jobs = JSON.parse(saved);
+    } else {
+      jobs = initialJobs;
+      localStorage.setItem('xavierJobTracker', JSON.stringify(jobs));
+    }
+  } catch(e) {
+    console.error("Could not load jobs.json", e);
     jobs = [];
   }
   render();
@@ -107,20 +115,6 @@ function loadData() {
 
 function saveData() {
   localStorage.setItem('xavierJobTracker', JSON.stringify(jobs));
-}
-
-async function loadDefaultData() {
-  if (confirm("Load the original 16 roles? This will replace current data.")) {
-    try {
-      const res = await fetch('jobs.json');  // Loads from your GitHub repo
-      jobs = await res.json();
-      saveData();
-      render();
-      alert("✅ Default data loaded!");
-    } catch(e) {
-      alert("Failed to load jobs.json. Make sure the file is in the same folder.");
-    }
-  }
 }
 
 function render() {
@@ -199,7 +193,7 @@ function exportData() {
   const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
   const link = document.createElement('a');
   link.href = dataUri;
-  link.download = `xavier_jobs_${new Date().toISOString().slice(0,10)}.json`;
+  link.download = `jobs.json`;
   link.click();
 }
 
@@ -215,9 +209,9 @@ function importFromFile() {
         jobs = JSON.parse(ev.target.result);
         saveData();
         render();
-        alert('✅ Data imported successfully!');
+        alert('✅ Imported!');
       } catch(err) {
-        alert('❌ Invalid JSON file');
+        alert('❌ Invalid JSON');
       }
     };
     reader.readAsText(file);
@@ -225,8 +219,15 @@ function importFromFile() {
   input.click();
 }
 
+function resetToInitial() {
+  if (confirm("Reset to original data from jobs.json?")) {
+    localStorage.removeItem('xavierJobTracker');
+    location.reload();
+  }
+}
+
 // Initialize
-loadData();
+loadInitialData();
 </script>
 </body>
 </html>
