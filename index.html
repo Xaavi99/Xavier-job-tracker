@@ -8,92 +8,83 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e0e0f;
-    --surface: #161618;
-    --surface2: #1e1e21;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #e8e8ea;
-    --muted: #888890;
-    --accent: #c8ff57;
-    --accent-dim: rgba(200,255,87,0.12);
-    --accent-text: #0e0e0f;
-    --red: #ff5c5c;
-    --amber: #ffb547;
-    --blue: #5ca4ff;
-    --teal: #4dd9ac;
-    --purple: #b89dff;
-    --radius: 6px;
-    --radius-lg: 10px;
-    --font-body: 'DM Sans', sans-serif;
-    --font-mono: 'DM Mono', monospace;
+    --bg:#0e0e0f;--surface:#161618;--surface2:#1e1e21;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+    --text:#e8e8ea;--muted:#888890;
+    --accent:#c8ff57;--accent-dim:rgba(200,255,87,0.12);--accent-text:#0e0e0f;
+    --red:#ff5c5c;--amber:#ffb547;--blue:#5ca4ff;--teal:#4dd9ac;--purple:#b89dff;
+    --radius:6px;--radius-lg:10px;
+    --font-body:'DM Sans',sans-serif;--font-mono:'DM Mono',monospace;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; min-height: 100vh; padding: 2rem; }
-  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-  .brand { display: flex; flex-direction: column; gap: 4px; }
-  .brand-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; }
-  h1 { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; }
-  h1 span { font-weight: 500; }
-  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .btn { font-family: var(--font-body); font-size: 13px; padding: 7px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
-  .btn:hover { background: var(--surface2); color: var(--text); }
-  .btn-accent { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
-  .btn-accent:hover { background: #d4ff6a; color: var(--accent-text); }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 2rem; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
-  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-mono); margin-bottom: 6px; }
-  .stat-num { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; }
-  .stat-num.accent { color: var(--accent); }
-  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
-  .filter-pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; }
-  .filter-pill:hover { border-color: var(--border2); color: var(--text); }
-  .filter-pill.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-  .search-wrap { margin-left: auto; position: relative; }
-  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-  #search { font-family: var(--font-body); font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 6px 12px 6px 32px; width: 200px; outline: none; transition: border-color 0.15s; }
-  #search:focus { border-color: var(--border2); }
-  #search::placeholder { color: var(--muted); }
-  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 700px; }
-  thead th { text-align: left; padding: 12px 14px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  col.c-role   { width: 20%; }
-  col.c-loc    { width: 12%; }
-  col.c-tier   { width: 7%; }
-  col.c-status { width: 12%; }
-  col.c-date   { width: 12%; }
-  col.c-notes  { width: 28%; }
-  col.c-link   { width: 5%; }
-  col.c-del    { width: 4%; }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: var(--surface2); }
-  td { padding: 10px 14px; vertical-align: middle; font-size: 13px; }
-  .role-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .company-name { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tier-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 4px; display: inline-block; }
-  .tier-A { background: rgba(200,255,87,0.1); color: var(--accent); border: 1px solid rgba(200,255,87,0.2); }
-  .tier-B { background: rgba(92,164,255,0.1); color: var(--blue); border: 1px solid rgba(92,164,255,0.2); }
-  .tier-C { background: rgba(136,136,144,0.1); color: var(--muted); border: 1px solid var(--border); }
-  .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer; display: inline-block; font-family: var(--font-mono); transition: opacity 0.1s; white-space: nowrap; user-select: none; }
-  .status-pill:hover { opacity: 0.8; }
-  .s-Interested { background: rgba(255,181,71,0.1); color: var(--amber); border: 1px solid rgba(255,181,71,0.2); }
-  .s-Applied    { background: rgba(77,217,172,0.1); color: var(--teal); border: 1px solid rgba(77,217,172,0.2); }
-  .s-Interview  { background: rgba(184,157,255,0.1); color: var(--purple); border: 1px solid rgba(184,157,255,0.2); }
-  .s-Offer      { background: rgba(200,255,87,0.12); color: var(--accent); border: 1px solid rgba(200,255,87,0.25); }
-  .s-Declined   { background: rgba(255,92,92,0.08); color: var(--red); border: 1px solid rgba(255,92,92,0.2); }
-  .s-Rejected   { background: rgba(136,136,144,0.1); color: var(--muted); border: 1px solid var(--border); }
-  .inline-input { background: transparent; border: none; color: var(--text); font-family: var(--font-body); font-size: 12px; width: 100%; outline: none; padding: 0; }
-  .inline-input::placeholder { color: #3a3a3e; }
-  .inline-input[type="date"] { color-scheme: dark; color: var(--muted); }
-  .link-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; transition: color 0.15s; }
-  .link-btn:hover { color: var(--accent); }
-  .del-btn { background: none; border: none; color: #3a3a3e; cursor: pointer; padding: 4px; transition: color 0.15s; line-height: 1; display: flex; align-items: center; }
-  .del-btn:hover { color: var(--red); }
-  .empty { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
-  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 16px; font-size: 12px; font-family: var(--font-mono); color: var(--accent); opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 100; }
-  .toast.show { opacity: 1; transform: translateY(0); }
-  .referral-tag { font-family: var(--font-mono); font-size: 9px; padding: 1px 5px; border-radius: 3px; background: rgba(200,255,87,0.15); color: var(--accent); border: 1px solid rgba(200,255,87,0.3); margin-left: 4px; vertical-align: middle; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;min-height:100vh;padding:2rem}
+  header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+  .brand{display:flex;flex-direction:column;gap:4px}
+  .brand-title{font-family:var(--font-mono);font-size:11px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase}
+  h1{font-size:26px;font-weight:300;letter-spacing:-0.02em}
+  h1 span{font-weight:500}
+  .header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .sync-status{font-family:var(--font-mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background 0.3s}
+  .sync-dot.saving{background:var(--amber)}
+  .sync-dot.saved{background:var(--teal)}
+  .sync-dot.error{background:var(--red)}
+  .btn{font-family:var(--font-body);font-size:13px;padding:7px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--surface2);color:var(--text)}
+  .btn-accent{background:var(--accent);color:var(--accent-text);border-color:var(--accent);font-weight:500}
+  .btn-accent:hover{background:#d4ff6a;color:var(--accent-text)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:2rem}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.25rem}
+  .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;font-family:var(--font-mono);margin-bottom:6px}
+  .stat-num{font-size:28px;font-weight:300;letter-spacing:-0.03em}
+  .stat-num.accent{color:var(--accent)}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center}
+  .filter-pill{font-family:var(--font-mono);font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.05em}
+  .filter-pill:hover{border-color:var(--border2);color:var(--text)}
+  .filter-pill.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .search-wrap{margin-left:auto;position:relative}
+  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  #search{font-family:var(--font-body);font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:6px 12px 6px 32px;width:200px;outline:none;transition:border-color 0.15s}
+  #search:focus{border-color:var(--border2)}
+  #search::placeholder{color:var(--muted)}
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
+  thead th{text-align:left;padding:12px 14px;font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+  col.c-role{width:20%}col.c-loc{width:12%}col.c-tier{width:7%}
+  col.c-status{width:12%}col.c-date{width:12%}col.c-notes{width:28%}
+  col.c-link{width:5%}col.c-del{width:4%}
+  tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--surface2)}
+  td{padding:10px 14px;vertical-align:middle;font-size:13px}
+  .role-name{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .company-name{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tier-badge{font-family:var(--font-mono);font-size:10px;font-weight:500;padding:3px 8px;border-radius:4px;display:inline-block}
+  .tier-A{background:rgba(200,255,87,0.1);color:var(--accent);border:1px solid rgba(200,255,87,0.2)}
+  .tier-B{background:rgba(92,164,255,0.1);color:var(--blue);border:1px solid rgba(92,164,255,0.2)}
+  .tier-C{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
+  .status-pill{font-size:11px;padding:4px 10px;border-radius:20px;cursor:pointer;display:inline-block;font-family:var(--font-mono);transition:opacity 0.1s;white-space:nowrap;user-select:none}
+  .status-pill:hover{opacity:0.8}
+  .s-Interested{background:rgba(255,181,71,0.1);color:var(--amber);border:1px solid rgba(255,181,71,0.2)}
+  .s-Applied{background:rgba(77,217,172,0.1);color:var(--teal);border:1px solid rgba(77,217,172,0.2)}
+  .s-Interview{background:rgba(184,157,255,0.1);color:var(--purple);border:1px solid rgba(184,157,255,0.2)}
+  .s-Offer{background:rgba(200,255,87,0.12);color:var(--accent);border:1px solid rgba(200,255,87,0.25)}
+  .s-Declined{background:rgba(255,92,92,0.08);color:var(--red);border:1px solid rgba(255,92,92,0.2)}
+  .s-Rejected{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
+  .inline-input{background:transparent;border:none;color:var(--text);font-family:var(--font-body);font-size:12px;width:100%;outline:none;padding:0}
+  .inline-input::placeholder{color:#3a3a3e}
+  .inline-input[type="date"]{color-scheme:dark;color:var(--muted)}
+  .link-btn{display:inline-flex;align-items:center;justify-content:center;color:var(--muted);text-decoration:none;transition:color 0.15s}
+  .link-btn:hover{color:var(--accent)}
+  .del-btn{background:none;border:none;color:#3a3a3e;cursor:pointer;padding:4px;transition:color 0.15s;line-height:1;display:flex;align-items:center}
+  .del-btn:hover{color:var(--red)}
+  .referral-tag{font-family:var(--font-mono);font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(200,255,87,0.15);color:var(--accent);border:1px solid rgba(200,255,87,0.3);margin-left:4px;vertical-align:middle}
+  .loading{text-align:center;padding:4rem;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em}
+  .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:12px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;font-family:var(--font-mono);color:var(--accent);opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none;z-index:100}
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.error-toast{color:var(--red);border-color:rgba(255,92,92,0.3)}
 </style>
 </head>
 <body>
@@ -104,6 +95,10 @@
     <h1>Job <span>tracker</span></h1>
   </div>
   <div class="header-actions">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">connected</span>
+    </div>
     <button class="btn" onclick="exportCSV()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export CSV
@@ -116,12 +111,12 @@
 </header>
 
 <div class="stats">
-  <div class="stat"><div class="stat-label">Total</div><div class="stat-num" id="st-total">0</div></div>
-  <div class="stat"><div class="stat-label">Applied</div><div class="stat-num accent" id="st-applied">0</div></div>
-  <div class="stat"><div class="stat-label">Interviews</div><div class="stat-num" id="st-interview">0</div></div>
-  <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">0</div></div>
-  <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">0</div></div>
-  <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">0</div></div>
+  <div class="stat"><div class="stat-label">Total</div><div class="stat-num" id="st-total">—</div></div>
+  <div class="stat"><div class="stat-label">Applied</div><div class="stat-num accent" id="st-applied">—</div></div>
+  <div class="stat"><div class="stat-label">Interviews</div><div class="stat-num" id="st-interview">—</div></div>
+  <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">—</div></div>
+  <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">—</div></div>
+  <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">—</div></div>
 </div>
 
 <div class="controls">
@@ -150,98 +145,178 @@
         <th>Status</th><th>Date applied</th><th>Notes</th><th>Link</th><th></th>
       </tr>
     </thead>
-    <tbody id="tbody"></tbody>
+    <tbody id="tbody">
+      <tr><td colspan="8"><div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div></td></tr>
+    </tbody>
   </table>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
-const STORAGE_KEY = 'xavier_job_tracker_v2';
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SB_URL = 'https://nthonxtycsyplkmpwjrh.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50aG9ueHR5Y3N5cGxrbXB3anJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTQwMTEsImV4cCI6MjA5NTEzMDAxMX0.c0pGAlhM1Zis6aywVUfzDNaML-zj1yplie-2OUYN4vI';
+const TABLE  = 'jobs';
 
-const DEFAULT_JOBS = [
-  // ── TIER A (Tier 1 from target doc) ──────────────────────────────────────
-  {id:1,  role:'Integrity / Graduate Engineer', company:'Fugro',                  location:'UK / Global',          tier:'A', status:'Interested', date:'', notes:'CTMC modelling + Python + RBI = direct match for their offshore wind Asset Integrity line', link:'https://www.fugro.com/careers', referral:false},
-  {id:2,  role:'Graduate Engineer (RBI)',        company:'DNV',                    location:'UK / Norway',          tier:'A', status:'Interested', date:'', notes:'API 580 cert in progress; authors the RBI standards you apply — great narrative fit', link:'https://www.dnv.com/en/careers/', referral:false},
-  {id:3,  role:'Integrity / Inspection Engineer',company:'Oceaneering',            location:'Teesside / Aberdeen',  tier:'A', status:'Interested', date:'', notes:'NDT (UT/RT/MPI) + RBI + IMDS digital solutions division', link:'https://www.oceaneering.com/careers/', referral:false},
-  {id:4,  role:'Graduate / Junior Engineer',     company:'Bureau Veritas',         location:'UK (Marine & Offshore)',tier:'A', status:'Interested', date:'', notes:'Issued NI 657 RBI guidelines for floating units — exactly your MSc asset class', link:'https://group.bureauveritas.com/careers', referral:false},
-  {id:5,  role:'Graduate Engineer (Integrity)',  company:'Lloyd\'s Register',      location:'UK',                   tier:'A', status:'Interested', date:'', notes:'USE INTERNAL REFERRAL from 2025 internship — worth more than 10 cold apps', link:'https://www.lr.org/en/careers/', referral:true},
-  {id:6,  role:'Integrity / RBI Engineer',       company:'OGC Energy',             location:'UK (Offshore Wind)',   tier:'A', status:'Interested', date:'', notes:'Boutique UK integrity specialist with dedicated offshore wind RBI practice', link:'https://ogcenergy.com/careers/', referral:false},
-  {id:7,  role:'Inspection / Integrity Engineer',company:'Intertek',               location:'UK',                   tier:'A', status:'Interested', date:'', notes:'Offshore wind NDT, corrosion mapping, structural health monitoring — all your skills', link:'https://www.intertek.com/careers/', referral:false},
-  {id:8,  role:'RBI / Integrity Engineer',       company:'Velosi Asset Integrity', location:'UK / Global',          tier:'A', status:'Interested', date:'', notes:'Boutique RBI consultancy, graduate-friendly; 3 yrs RBI at BPCL puts you above typical grad', link:'https://velosiaims.com/careers/', referral:false},
-  {id:9,  role:'Asset Integrity Engineer',       company:'Altrad',                 location:'Warrington',           tier:'A', status:'Interested', date:'', notes:'Direct RBI match, UK refineries & offshore', link:'', referral:false},
-  {id:10, role:'Asset Integrity Engineer',       company:'Baker Hughes',           location:'Liverpool',            tier:'A', status:'Interested', date:'', notes:'Local match, corrosion/integrity management; Python a plus', link:'', referral:false},
-  // ── TIER B (Tier 2 from target doc + strong Tier B roles) ─────────────────
-  {id:11, role:'Graduate Programme / Integrity', company:'Equinor',                location:'UK / Norway',          tier:'B', status:'Interested', date:'', notes:'Operates Hywind Scotland (spar floating wind) — your dissertation maps directly onto their assets', link:'https://www.equinor.com/careers', referral:false},
-  {id:12, role:'Asset Integrity / Reliability',  company:'RWE Offshore Wind',      location:'North Sea / Germany',  tier:'B', status:'Interested', date:'', notes:'Triton Knoll + expanding O&M team; grad & intern programmes run annually', link:'https://careers.rwe.com/', referral:false},
-  {id:13, role:'Reliability / Asset Management', company:'Ørsted',                 location:'Grimsby / Barrow / GY',tier:'B', status:'Interested', date:'', notes:'World\'s largest offshore wind operator; O&M hubs across UK East coast', link:'https://orsted.com/en/careers', referral:false},
-  {id:14, role:'Integrity / Reliability Eng.',   company:'Wood PLC',               location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'Offshore wind integrity consulting, lifetime extension, OPEX optimisation', link:'https://www.woodplc.com/careers', referral:false},
-  {id:15, role:'Graduate / Maintenance Eng.',    company:'Aker Solutions',         location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'EMM segment offshore maintenance + renewables floating wind projects (Equinor contracts)', link:'https://www.akersolutions.com/careers/', referral:false},
-  {id:16, role:'Intern / Inspection Engineer',   company:'DeepOcean',              location:'Norway / North Sea',   tier:'B', status:'Interested', date:'', notes:'Subsea IMR specialist; structured summer internship includes 2 weeks offshore — rare grad exposure', link:'https://www.deepocean.no/career', referral:false},
-  {id:17, role:'Inspection / Integrity Eng.',    company:'Bilfinger SE',           location:'UK (Offshore)',        tier:'B', status:'Interested', date:'', notes:'Top offshore inspection & industrial maintenance company actively hiring UK grads now', link:'https://www.bilfinger.com/en/careers/', referral:false},
-  {id:18, role:'Reliability / Service Eng.',     company:'Siemens Gamesa',         location:'Hull / Humberside',    tier:'B', status:'Interested', date:'', notes:'Turbine OEM; ageing assets = growing demand for reliability engineering skills', link:'https://www.siemensgamesa.com/en-int/careers', referral:false},
-  {id:19, role:'Graduate / Reliability Eng.',    company:'Vestas',                 location:'UK (Offshore Wind)',   tier:'B', status:'Interested', date:'', notes:'Your OPEX reduction research is directly relevant to their service division', link:'https://www.vestas.com/en/careers', referral:false},
-  {id:20, role:'Pipeline Integrity Specialist',  company:'Oceaneering',            location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'RBI methodology match', link:'https://www.oceaneering.com/careers/', referral:false},
-  {id:21, role:'RBI Engineer – Marine Structures',company:'Petrofac',              location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'Direct dissertation methodology match', link:'', referral:false},
-  {id:22, role:'Offshore Maintenance & Reliability',company:'Shell UK',            location:'Norfolk',              tier:'B', status:'Interested', date:'', notes:'CBM / RCA background match', link:'', referral:false},
-  {id:23, role:'Corrosion Engineer – Integrity', company:'Baker Hughes',           location:'Liverpool',            tier:'B', status:'Interested', date:'', notes:'Inhibitor evaluation, integrity tech', link:'', referral:false},
-  {id:24, role:'Senior Structural Integrity Eng.',company:'Amentum',               location:'Remote / Warrington',  tier:'B', status:'Interested', date:'', notes:'Abaqus / FEA match', link:'', referral:false},
-  {id:25, role:'Mechanical Engineer – NDT',       company:'ALTEN UK',              location:'UK (various)',          tier:'B', status:'Interested', date:'', notes:'Pressure vessels, ASME/API, fracture mechanics, NDT', link:'', referral:false},
-  {id:26, role:'Inspections Engineer',            company:'SGS',                   location:'Field-based UK',        tier:'B', status:'Interested', date:'', notes:'UT/RT/MPI competencies match', link:'', referral:false},
-  // ── TIER C (Tier 3 from target doc) ──────────────────────────────────────
-  {id:27, role:'Graduate Engineer (Marine / Offshore)',company:'COWI',             location:'London',               tier:'C', status:'Interested', date:'', notes:'Summer 2026 intake; structural integrity, fatigue, material behaviour', link:'https://www.cowi.com/careers', referral:false},
-  {id:28, role:'Asset Integrity / RBI Consultant',company:'KBR',                  location:'UK / Global',          tier:'C', status:'Interested', date:'', notes:'API 580 knowledge valued; active offshore RBI projects moving into renewables', link:'https://www.kbrjobs.com/', referral:false},
-  {id:29, role:'Inspector / Engineer',            company:'TÜV Rheinland',         location:'UK',                   tier:'C', status:'Interested', date:'', notes:'Expanding into offshore wind structural assessment; NDT + integrity background fits', link:'https://www.tuv.com/world/en/about-tuv-rheinland/career.html', referral:false},
-  {id:30, role:'Project / NDT Engineer',          company:'Element Materials Tech.',location:'UK (Offshore)',       tier:'C', status:'Interested', date:'', notes:'Structural analysis, NDT, FFS, damage mechanisms for offshore/energy', link:'https://www.element.com/careers', referral:false},
-  {id:31, role:'Research / Reliability Engineer', company:'ORE Catapult',          location:'UK (Offshore Wind)',   tier:'C', status:'Interested', date:'', notes:'UK national offshore renewables R&D hub; O&M and reliability improvement roles', link:'https://ore.catapult.org.uk/careers/', referral:false},
-  {id:32, role:'Offshore Wind Ops Intern',        company:'RWE Offshore Wind',     location:'Germany / North Sea',  tier:'C', status:'Interested', date:'', notes:'Annual intern programme', link:'https://careers.rwe.com/', referral:false},
+// ── SEED DATA ─────────────────────────────────────────────────────────────────
+const SEED = [
+  {id:1,  role:'Integrity / Graduate Engineer',        company:'Fugro',                  location:'UK / Global',            tier:'A', status:'Interested', date:'', notes:'CTMC modelling + Python + RBI = direct match for their offshore wind Asset Integrity line', link:'https://www.fugro.com/careers', referral:false},
+  {id:2,  role:'Graduate Engineer (RBI)',              company:'DNV',                    location:'UK / Norway',            tier:'A', status:'Interested', date:'', notes:'API 580 cert in progress; authors the RBI standards you apply — great narrative fit', link:'https://www.dnv.com/en/careers/', referral:false},
+  {id:3,  role:'Integrity / Inspection Engineer',      company:'Oceaneering',            location:'Teesside / Aberdeen',    tier:'A', status:'Interested', date:'', notes:'NDT (UT/RT/MPI) + RBI + IMDS digital solutions division', link:'https://www.oceaneering.com/careers/', referral:false},
+  {id:4,  role:'Graduate / Junior Engineer',           company:'Bureau Veritas',         location:'UK (Marine & Offshore)', tier:'A', status:'Interested', date:'', notes:'Issued NI 657 RBI guidelines for floating units — exactly your MSc asset class', link:'https://group.bureauveritas.com/careers', referral:false},
+  {id:5,  role:'Graduate Engineer (Integrity)',        company:"Lloyd's Register",       location:'UK',                     tier:'A', status:'Interested', date:'', notes:'USE INTERNAL REFERRAL from 2025 internship — worth more than 10 cold apps', link:'https://www.lr.org/en/careers/', referral:true},
+  {id:6,  role:'Integrity / RBI Engineer',             company:'OGC Energy',             location:'UK (Offshore Wind)',     tier:'A', status:'Interested', date:'', notes:'Boutique UK integrity specialist with dedicated offshore wind RBI practice', link:'https://ogcenergy.com/careers/', referral:false},
+  {id:7,  role:'Inspection / Integrity Engineer',      company:'Intertek',               location:'UK',                     tier:'A', status:'Interested', date:'', notes:'Offshore wind NDT, corrosion mapping, structural health monitoring — all your skills', link:'https://www.intertek.com/careers/', referral:false},
+  {id:8,  role:'RBI / Integrity Engineer',             company:'Velosi Asset Integrity', location:'UK / Global',            tier:'A', status:'Interested', date:'', notes:'Boutique RBI consultancy, graduate-friendly; 3 yrs RBI at BPCL puts you above typical grad', link:'https://velosiaims.com/careers/', referral:false},
+  {id:9,  role:'Asset Integrity Engineer',             company:'Altrad',                 location:'Warrington',             tier:'A', status:'Interested', date:'', notes:'Direct RBI match, UK refineries & offshore', link:'', referral:false},
+  {id:10, role:'Asset Integrity Engineer',             company:'Baker Hughes',           location:'Liverpool',               tier:'A', status:'Interested', date:'', notes:'Local match, corrosion/integrity management; Python a plus', link:'', referral:false},
+  {id:11, role:'Graduate Programme / Integrity',       company:'Equinor',                location:'UK / Norway',            tier:'B', status:'Interested', date:'', notes:'Operates Hywind Scotland (spar floating wind) — dissertation maps directly onto their assets', link:'https://www.equinor.com/careers', referral:false},
+  {id:12, role:'Asset Integrity / Reliability',        company:'RWE Offshore Wind',      location:'North Sea / Germany',    tier:'B', status:'Interested', date:'', notes:'Triton Knoll + expanding O&M team; grad & intern programmes run annually', link:'https://careers.rwe.com/', referral:false},
+  {id:13, role:'Reliability / Asset Management',       company:'Orsted',                 location:'Grimsby / Barrow / GY',  tier:'B', status:'Interested', date:'', notes:"World's largest offshore wind operator; O&M hubs across UK East coast", link:'https://orsted.com/en/careers', referral:false},
+  {id:14, role:'Integrity / Reliability Engineer',     company:'Wood PLC',               location:'Aberdeen',               tier:'B', status:'Interested', date:'', notes:'Offshore wind integrity consulting, lifetime extension, OPEX optimisation', link:'https://www.woodplc.com/careers', referral:false},
+  {id:15, role:'Graduate / Maintenance Engineer',      company:'Aker Solutions',         location:'Aberdeen',               tier:'B', status:'Interested', date:'', notes:'EMM segment offshore maintenance + renewables floating wind projects', link:'https://www.akersolutions.com/careers/', referral:false},
+  {id:16, role:'Intern / Inspection Engineer',         company:'DeepOcean',              location:'Norway / North Sea',     tier:'B', status:'Interested', date:'', notes:'Subsea IMR specialist; structured summer internship includes 2 weeks offshore', link:'https://www.deepocean.no/career', referral:false},
+  {id:17, role:'Inspection / Integrity Engineer',      company:'Bilfinger SE',           location:'UK (Offshore)',          tier:'B', status:'Interested', date:'', notes:'Top offshore inspection & industrial maintenance company actively hiring UK grads now', link:'https://www.bilfinger.com/en/careers/', referral:false},
+  {id:18, role:'Reliability / Service Engineer',       company:'Siemens Gamesa',         location:'Hull / Humberside',      tier:'B', status:'Interested', date:'', notes:'Turbine OEM; ageing assets = growing demand for reliability engineering skills', link:'https://www.siemensgamesa.com/en-int/careers', referral:false},
+  {id:19, role:'Graduate / Reliability Engineer',      company:'Vestas',                 location:'UK (Offshore Wind)',     tier:'B', status:'Interested', date:'', notes:'Your OPEX reduction research is directly relevant to their service division', link:'https://www.vestas.com/en/careers', referral:false},
+  {id:20, role:'Pipeline Integrity Specialist',        company:'Oceaneering',            location:'Aberdeen',               tier:'B', status:'Interested', date:'', notes:'RBI methodology match', link:'https://www.oceaneering.com/careers/', referral:false},
+  {id:21, role:'RBI Engineer - Marine Structures',     company:'Petrofac',               location:'Aberdeen',               tier:'B', status:'Interested', date:'', notes:'Direct dissertation methodology match', link:'', referral:false},
+  {id:22, role:'Offshore Maintenance & Reliability',   company:'Shell UK',               location:'Norfolk',                tier:'B', status:'Interested', date:'', notes:'CBM / RCA background match', link:'', referral:false},
+  {id:23, role:'Corrosion Engineer - Integrity',       company:'Baker Hughes',           location:'Liverpool',               tier:'B', status:'Interested', date:'', notes:'Inhibitor evaluation, integrity tech', link:'', referral:false},
+  {id:24, role:'Senior Structural Integrity Engineer', company:'Amentum',                location:'Remote / Warrington',    tier:'B', status:'Interested', date:'', notes:'Abaqus / FEA match', link:'', referral:false},
+  {id:25, role:'Mechanical Engineer - NDT',            company:'ALTEN UK',               location:'UK (various)',           tier:'B', status:'Interested', date:'', notes:'Pressure vessels, ASME/API, fracture mechanics, NDT', link:'', referral:false},
+  {id:26, role:'Inspections Engineer',                 company:'SGS',                    location:'Field-based UK',         tier:'B', status:'Interested', date:'', notes:'UT/RT/MPI competencies match', link:'', referral:false},
+  {id:27, role:'Graduate Engineer (Marine/Offshore)',  company:'COWI',                   location:'London',                 tier:'C', status:'Interested', date:'', notes:'Summer 2026 intake; structural integrity, fatigue, material behaviour', link:'https://www.cowi.com/careers', referral:false},
+  {id:28, role:'Asset Integrity / RBI Consultant',     company:'KBR',                    location:'UK / Global',            tier:'C', status:'Interested', date:'', notes:'API 580 knowledge valued; active offshore RBI projects moving into renewables', link:'https://www.kbrjobs.com/', referral:false},
+  {id:29, role:'Inspector / Engineer',                 company:'TUV Rheinland',           location:'UK',                    tier:'C', status:'Interested', date:'', notes:'Expanding into offshore wind structural assessment; NDT + integrity background fits', link:'https://www.tuv.com/world/en/about-tuv-rheinland/career.html', referral:false},
+  {id:30, role:'Project / NDT Engineer',               company:'Element Materials Tech', location:'UK (Offshore)',          tier:'C', status:'Interested', date:'', notes:'Structural analysis, NDT, FFS, damage mechanisms for offshore/energy', link:'https://www.element.com/careers', referral:false},
+  {id:31, role:'Research / Reliability Engineer',      company:'ORE Catapult',           location:'UK (Offshore Wind)',     tier:'C', status:'Interested', date:'', notes:'UK national offshore renewables R&D hub; O&M and reliability improvement roles', link:'https://ore.catapult.org.uk/careers/', referral:false},
+  {id:32, role:'Offshore Wind Ops Intern',             company:'RWE Offshore Wind',      location:'Germany / North Sea',    tier:'C', status:'Interested', date:'', notes:'Annual intern programme', link:'https://careers.rwe.com/', referral:false},
 ];
 
-let jobs = load();
+// ── STATE ─────────────────────────────────────────────────────────────────────
+const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
+let jobs = [];
 let currentFilter = 'all';
-let nextId = Math.max(...jobs.map(j => j.id), 0) + 1;
+let debounceTimers = {};
 
-function load() {
+// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
+const headers = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=minimal'
+};
+
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  label.textContent = state === 'saving' ? 'saving…' : state === 'saved' ? 'saved' : state === 'error' ? 'error' : 'connected';
+  if (state === 'saved') setTimeout(() => setSyncStatus(''), 2000);
+}
+
+async function sbFetch(path, options = {}) {
+  const res = await fetch(SB_URL + '/rest/v1/' + path, { ...options, headers: { ...headers, ...(options.headers||{}) } });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function loadJobs() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_JOBS));
-  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
+    const data = await sbFetch(TABLE + '?select=*&order=id');
+    if (data.length === 0) {
+      await seedJobs();
+    } else {
+      jobs = data;
+      render();
+    }
+    setSyncStatus('');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Could not connect to Supabase', true);
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="8"><div class="loading">Could not load data. Check your connection.</div></td></tr>';
+  }
 }
 
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); } catch(e) {}
+async function seedJobs() {
+  setSyncStatus('saving');
+  await sbFetch(TABLE, { method: 'POST', body: JSON.stringify(SEED) });
+  jobs = JSON.parse(JSON.stringify(SEED));
+  setSyncStatus('saved');
+  render();
+  showToast('Seeded 32 jobs');
 }
 
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 1800);
+async function updateJob(id, fields) {
+  setSyncStatus('saving');
+  try {
+    await sbFetch(TABLE + '?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(fields) });
+    setSyncStatus('saved');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Save failed', true);
+  }
 }
 
-function cycleStatus(id) {
+async function insertJob(job) {
+  setSyncStatus('saving');
+  try {
+    await sbFetch(TABLE, { method: 'POST', body: JSON.stringify(job) });
+    setSyncStatus('saved');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Insert failed', true);
+  }
+}
+
+async function deleteJob(id) {
+  setSyncStatus('saving');
+  try {
+    await sbFetch(TABLE + '?id=eq.' + id, { method: 'DELETE' });
+    setSyncStatus('saved');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Delete failed', true);
+  }
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+async function cycleStatus(id) {
   const j = jobs.find(x => x.id === id);
   if (!j) return;
   j.status = STATUSES[(STATUSES.indexOf(j.status) + 1) % STATUSES.length];
-  save(); render();
+  render();
   showToast('Status → ' + j.status);
+  await updateJob(id, { status: j.status });
 }
 
-function updateField(id, field, val) {
+function updateFieldLocal(id, field, val) {
   const j = jobs.find(x => x.id === id);
-  if (j) { j[field] = val; save(); }
+  if (!j) return;
+  j[field] = val;
+  clearTimeout(debounceTimers[id + field]);
+  debounceTimers[id + field] = setTimeout(() => updateJob(id, { [field]: val }), 600);
 }
 
-function deleteRow(id) {
+async function deleteRow(id) {
   jobs = jobs.filter(x => x.id !== id);
-  save(); render();
+  render();
   showToast('Role removed');
+  await deleteJob(id);
 }
 
-function addRow() {
-  jobs.push({ id: nextId++, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false });
-  save(); render();
+async function addRow() {
+  const newId = Math.max(...jobs.map(j => j.id), 0) + 1;
+  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false };
+  jobs.push(job);
+  render();
+  await insertJob(job);
 }
 
 function setFilter(f, btn) {
@@ -253,7 +328,7 @@ function setFilter(f, btn) {
 
 function exportCSV() {
   const headers = ['Role','Company','Location','Tier','Status','Date Applied','Notes','Link'];
-  const rows = jobs.map(j => [j.role,j.company,j.location,j.tier,j.status,j.date,j.notes,j.link||''].map(v => '"' + (v||'').replace(/"/g,'""') + '"'));
+  const rows = jobs.map(j => [j.role,j.company,j.location,j.tier,j.status,j.date||'',j.notes||'',j.link||''].map(v => '"' + (v||'').replace(/"/g,'""') + '"'));
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -262,6 +337,7 @@ function exportCSV() {
   showToast('CSV exported');
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function esc(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -272,13 +348,13 @@ function render() {
     const tierMatch = ['all','A','B','C'].includes(currentFilter)
       ? (currentFilter === 'all' || j.tier === currentFilter)
       : j.status === currentFilter;
-    const searchMatch = !query || (j.role+j.company+j.location+j.notes).toLowerCase().includes(query);
+    const searchMatch = !query || (j.role+j.company+j.location+(j.notes||'')).toLowerCase().includes(query);
     return tierMatch && searchMatch;
   });
 
   const tb = document.getElementById('tbody');
   tb.innerHTML = filtered.length === 0
-    ? '<tr><td colspan="8"><div class="empty">no roles match this filter</div></td></tr>'
+    ? '<tr><td colspan="8"><div class="loading">no roles match this filter</div></td></tr>'
     : filtered.map(j => `
       <tr>
         <td>
@@ -288,8 +364,8 @@ function render() {
         <td style="color:var(--muted);font-size:12px">${esc(j.location)}</td>
         <td><span class="tier-badge tier-${j.tier}">${j.tier}</span></td>
         <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
-        <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateField(${j.id},'date',this.value)"></td>
-        <td><input type="text" class="inline-input" value="${esc(j.notes)}" placeholder="Add notes…" onchange="updateField(${j.id},'notes',this.value)"></td>
+        <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateFieldLocal(${j.id},'date',this.value)"></td>
+        <td><input type="text" class="inline-input" value="${esc(j.notes||'')}" placeholder="Add notes…" oninput="updateFieldLocal(${j.id},'notes',this.value)"></td>
         <td>${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>` : ''}</td>
@@ -298,15 +374,23 @@ function render() {
         </button></td>
       </tr>`).join('');
 
-  document.getElementById('st-total').textContent = jobs.length;
-  document.getElementById('st-applied').textContent = jobs.filter(j => j.status === 'Applied').length;
-  document.getElementById('st-interview').textContent = jobs.filter(j => j.status === 'Interview').length;
-  document.getElementById('st-offer').textContent = jobs.filter(j => j.status === 'Offer').length;
-  document.getElementById('st-tierA').textContent = jobs.filter(j => j.tier === 'A').length;
-  document.getElementById('st-tierB').textContent = jobs.filter(j => j.tier === 'B').length;
+  document.getElementById('st-total').textContent    = jobs.length;
+  document.getElementById('st-applied').textContent  = jobs.filter(j => j.status === 'Applied').length;
+  document.getElementById('st-interview').textContent= jobs.filter(j => j.status === 'Interview').length;
+  document.getElementById('st-offer').textContent    = jobs.filter(j => j.status === 'Offer').length;
+  document.getElementById('st-tierA').textContent    = jobs.filter(j => j.tier === 'A').length;
+  document.getElementById('st-tierB').textContent    = jobs.filter(j => j.tier === 'B').length;
 }
 
-render();
+function showToast(msg, isError = false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast' + (isError ? ' error-toast' : '') + ' show';
+  setTimeout(() => el.className = 'toast', 2000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadJobs();
 </script>
 </body>
 </html>
