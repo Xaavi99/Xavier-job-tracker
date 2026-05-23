@@ -1,233 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xavier's Job Tracker</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:system-ui,-apple-system,sans-serif;background:#f8f9fa;color:#1f2937;}
-    .wrap{padding:1.5rem 1rem;max-width:1280px;margin:0 auto;}
-    .top-bar{display:flex;align-items:center;gap:16px;margin-bottom:2rem;flex-wrap:wrap}
-    .top-bar h2{font-size:26px;font-weight:700;color:#1f2937;flex:1}
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:2rem}
-    .stat{background:white;border-radius:16px;padding:1.25rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1)}
-    .stat-label{font-size:13px;color:#6b7280;margin-bottom:8px}
-    .stat-num{font-size:32px;font-weight:700;color:#1f2937}
-    .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem}
-    .filter-btn{font-size:14px;padding:8px 18px;border:1px solid #e5e7eb;border-radius:9999px;background:white;color:#4b5563;cursor:pointer;transition:all .2s}
-    .filter-btn.active{background:#2563eb;color:white;border-color:#2563eb}
-    table{width:100%;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1)}
-    thead th{text-align:left;padding:14px 20px;font-size:13px;font-weight:600;color:#6b7280;background:#f9fafb}
-    tbody tr{border-bottom:1px solid #f1f5f9}
-    tbody tr:hover{background:#f8fafc}
-    td{padding:14px 20px;vertical-align:middle}
-    td.wrap-text{white-space:normal;line-height:1.45}
-    .tier{font-size:13px;font-weight:600;padding:5px 12px;border-radius:9999px}
-    .tier-a{background:#e0e7ff;color:#4338ca}
-    .tier-b{background:#dbeafe;color:#1e40af}
-    .tier-c{background:#f3e8ff;color:#6b21a8}
-    .status-pill{font-size:13.5px;padding:6px 14px;border-radius:9999px;cursor:pointer;font-weight:500}
-    .s-interested{background:#fef3c7;color:#854d0e}
-    .s-applied{background:#dcfce7;color:#166534}
-    .s-interview{background:#a7f3d0;color:#0f766e}
-    .s-offer{background:#e0e7ff;color:#4338ca}
-    .s-declined{background:#fecaca;color:#b91c1c}
-    .s-rejected{background:#f3e8ff;color:#6b21a8}
-    .notes-input{width:100%;border:none;background:transparent;outline:none;font-size:14px;padding:4px 0}
-    .add-row-btn{margin:1rem 0;padding:12px 24px;border:1px solid #cbd5e1;border-radius:10px;background:white;color:#1e2937;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
-    .add-row-btn:hover{background:#f1f5f9}
-    .del-btn{color:#94a3b8;font-size:20px;background:none;border:none;cursor:pointer;padding:4px}
-    .del-btn:hover{color:#ef4444}
-    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:1rem}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xavier — Job Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e8ea;
+    --muted: #888890;
+    --accent: #c8ff57;
+    --accent-dim: rgba(200,255,87,0.12);
+    --accent-text: #0e0e0f;
+    --red: #ff5c5c;
+    --amber: #ffb547;
+    --blue: #5ca4ff;
+    --teal: #4dd9ac;
+    --purple: #b89dff;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; min-height: 100vh; padding: 2rem; }
+  header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+  .brand { display: flex; flex-direction: column; gap: 4px; }
+  .brand-title { font-family: var(--font-mono); font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; }
+  h1 { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; }
+  h1 span { font-weight: 500; }
+  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { font-family: var(--font-body); font-size: 13px; padding: 7px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .btn:hover { background: var(--surface2); color: var(--text); }
+  .btn-accent { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 500; }
+  .btn-accent:hover { background: #d4ff6a; color: var(--accent-text); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 2rem; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-mono); margin-bottom: 6px; }
+  .stat-num { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; }
+  .stat-num.accent { color: var(--accent); }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; align-items: center; }
+  .filter-pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em; }
+  .filter-pill:hover { border-color: var(--border2); color: var(--text); }
+  .filter-pill.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .search-wrap { margin-left: auto; position: relative; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  #search { font-family: var(--font-body); font-size: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); padding: 6px 12px 6px 32px; width: 200px; outline: none; transition: border-color 0.15s; }
+  #search:focus { border-color: var(--border2); }
+  #search::placeholder { color: var(--muted); }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 700px; }
+  thead th { text-align: left; padding: 12px 14px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  col.c-role   { width: 20%; }
+  col.c-loc    { width: 12%; }
+  col.c-tier   { width: 7%; }
+  col.c-status { width: 12%; }
+  col.c-date   { width: 12%; }
+  col.c-notes  { width: 28%; }
+  col.c-link   { width: 5%; }
+  col.c-del    { width: 4%; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  td { padding: 10px 14px; vertical-align: middle; font-size: 13px; }
+  .role-name { font-weight: 500; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .company-name { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tier-badge { font-family: var(--font-mono); font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 4px; display: inline-block; }
+  .tier-A { background: rgba(200,255,87,0.1); color: var(--accent); border: 1px solid rgba(200,255,87,0.2); }
+  .tier-B { background: rgba(92,164,255,0.1); color: var(--blue); border: 1px solid rgba(92,164,255,0.2); }
+  .tier-C { background: rgba(136,136,144,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .status-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; cursor: pointer; display: inline-block; font-family: var(--font-mono); transition: opacity 0.1s; white-space: nowrap; user-select: none; }
+  .status-pill:hover { opacity: 0.8; }
+  .s-Interested { background: rgba(255,181,71,0.1); color: var(--amber); border: 1px solid rgba(255,181,71,0.2); }
+  .s-Applied    { background: rgba(77,217,172,0.1); color: var(--teal); border: 1px solid rgba(77,217,172,0.2); }
+  .s-Interview  { background: rgba(184,157,255,0.1); color: var(--purple); border: 1px solid rgba(184,157,255,0.2); }
+  .s-Offer      { background: rgba(200,255,87,0.12); color: var(--accent); border: 1px solid rgba(200,255,87,0.25); }
+  .s-Declined   { background: rgba(255,92,92,0.08); color: var(--red); border: 1px solid rgba(255,92,92,0.2); }
+  .s-Rejected   { background: rgba(136,136,144,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .inline-input { background: transparent; border: none; color: var(--text); font-family: var(--font-body); font-size: 12px; width: 100%; outline: none; padding: 0; }
+  .inline-input::placeholder { color: #3a3a3e; }
+  .inline-input[type="date"] { color-scheme: dark; color: var(--muted); }
+  .link-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .link-btn:hover { color: var(--accent); }
+  .del-btn { background: none; border: none; color: #3a3a3e; cursor: pointer; padding: 4px; transition: color 0.15s; line-height: 1; display: flex; align-items: center; }
+  .del-btn:hover { color: var(--red); }
+  .empty { text-align: center; padding: 3rem; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 16px; font-size: 12px; font-family: var(--font-mono); color: var(--accent); opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .referral-tag { font-family: var(--font-mono); font-size: 9px; padding: 1px 5px; border-radius: 3px; background: rgba(200,255,87,0.15); color: var(--accent); border: 1px solid rgba(200,255,87,0.3); margin-left: 4px; vertical-align: middle; }
+</style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top-bar">
-    <h2>🎯 Xavier Sojan — Job Tracker</h2>
-    <button class="add-row-btn" onclick="addRow()">+ Add New Role</button>
-  </div>
 
-  <div class="stats">
-    <div class="stat"><div class="stat-label">Total Roles</div><div class="stat-num" id="st-total">0</div></div>
-    <div class="stat"><div class="stat-label">Applied</div><div class="stat-num" id="st-applied">0</div></div>
-    <div class="stat"><div class="stat-label">Interviews</div><div class="stat-num" id="st-interview">0</div></div>
-    <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">0</div></div>
+<header>
+  <div class="brand">
+    <span class="brand-title">Xavier Sojan · Asset Integrity</span>
+    <h1>Job <span>tracker</span></h1>
   </div>
-
-  <div class="filters">
-    <button class="filter-btn active" onclick="filterBy('all',this)">All</button>
-    <button class="filter-btn" onclick="filterBy('A',this)">Tier A</button>
-    <button class="filter-btn" onclick="filterBy('B',this)">Tier B</button>
-    <button class="filter-btn" onclick="filterBy('C',this)">Tier C</button>
-    <button class="filter-btn" onclick="filterBy('Applied',this)">Applied</button>
-    <button class="filter-btn" onclick="filterBy('Interview',this)">Interview</button>
+  <div class="header-actions">
+    <button class="btn" onclick="exportCSV()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+    <button class="btn btn-accent" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add role
+    </button>
   </div>
+</header>
 
-  <table id="job-table">
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total</div><div class="stat-num" id="st-total">0</div></div>
+  <div class="stat"><div class="stat-label">Applied</div><div class="stat-num accent" id="st-applied">0</div></div>
+  <div class="stat"><div class="stat-label">Interviews</div><div class="stat-num" id="st-interview">0</div></div>
+  <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">0</div></div>
+  <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">0</div></div>
+  <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">0</div></div>
+</div>
+
+<div class="controls">
+  <button class="filter-pill active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-pill" onclick="setFilter('A',this)">Tier A</button>
+  <button class="filter-pill" onclick="setFilter('B',this)">Tier B</button>
+  <button class="filter-pill" onclick="setFilter('C',this)">Tier C</button>
+  <button class="filter-pill" onclick="setFilter('Applied',this)">Applied</button>
+  <button class="filter-pill" onclick="setFilter('Interview',this)">Interview</button>
+  <button class="filter-pill" onclick="setFilter('Offer',this)">Offers</button>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search roles…" oninput="render()">
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <colgroup>
+      <col class="c-role"><col class="c-loc"><col class="c-tier">
+      <col class="c-status"><col class="c-date"><col class="c-notes"><col class="c-link"><col class="c-del">
+    </colgroup>
     <thead>
       <tr>
-        <th>Role / Company</th>
-        <th>Location</th>
-        <th>Tier</th>
-        <th>Status</th>
-        <th>Date Applied</th>
-        <th>Notes</th>
+        <th>Role / Company</th><th>Location</th><th>Tier</th>
+        <th>Status</th><th>Date applied</th><th>Notes</th><th>Link</th><th></th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
   </table>
-
-  <div class="actions">
-    <button class="add-row-btn" onclick="addRow()">+ Add Role</button>
-    <button class="add-row-btn" onclick="exportData()">📤 Export JSON</button>
-    <button class="add-row-btn" onclick="importFromFile()">📥 Import JSON</button>
-    <button class="add-row-btn" onclick="resetToInitial()" style="color:#2563eb">Reset to Initial Data</button>
-  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
-const STATUS_CLASS = {Interested:'s-interested',Applied:'s-applied',Interview:'s-interview',Offer:'s-offer',Declined:'s-declined',Rejected:'s-rejected'};
+const STORAGE_KEY = 'xavier_job_tracker_v2';
 
-let jobs = [];
+const DEFAULT_JOBS = [
+  // ── TIER A (Tier 1 from target doc) ──────────────────────────────────────
+  {id:1,  role:'Integrity / Graduate Engineer', company:'Fugro',                  location:'UK / Global',          tier:'A', status:'Interested', date:'', notes:'CTMC modelling + Python + RBI = direct match for their offshore wind Asset Integrity line', link:'https://www.fugro.com/careers', referral:false},
+  {id:2,  role:'Graduate Engineer (RBI)',        company:'DNV',                    location:'UK / Norway',          tier:'A', status:'Interested', date:'', notes:'API 580 cert in progress; authors the RBI standards you apply — great narrative fit', link:'https://www.dnv.com/en/careers/', referral:false},
+  {id:3,  role:'Integrity / Inspection Engineer',company:'Oceaneering',            location:'Teesside / Aberdeen',  tier:'A', status:'Interested', date:'', notes:'NDT (UT/RT/MPI) + RBI + IMDS digital solutions division', link:'https://www.oceaneering.com/careers/', referral:false},
+  {id:4,  role:'Graduate / Junior Engineer',     company:'Bureau Veritas',         location:'UK (Marine & Offshore)',tier:'A', status:'Interested', date:'', notes:'Issued NI 657 RBI guidelines for floating units — exactly your MSc asset class', link:'https://group.bureauveritas.com/careers', referral:false},
+  {id:5,  role:'Graduate Engineer (Integrity)',  company:'Lloyd\'s Register',      location:'UK',                   tier:'A', status:'Interested', date:'', notes:'USE INTERNAL REFERRAL from 2025 internship — worth more than 10 cold apps', link:'https://www.lr.org/en/careers/', referral:true},
+  {id:6,  role:'Integrity / RBI Engineer',       company:'OGC Energy',             location:'UK (Offshore Wind)',   tier:'A', status:'Interested', date:'', notes:'Boutique UK integrity specialist with dedicated offshore wind RBI practice', link:'https://ogcenergy.com/careers/', referral:false},
+  {id:7,  role:'Inspection / Integrity Engineer',company:'Intertek',               location:'UK',                   tier:'A', status:'Interested', date:'', notes:'Offshore wind NDT, corrosion mapping, structural health monitoring — all your skills', link:'https://www.intertek.com/careers/', referral:false},
+  {id:8,  role:'RBI / Integrity Engineer',       company:'Velosi Asset Integrity', location:'UK / Global',          tier:'A', status:'Interested', date:'', notes:'Boutique RBI consultancy, graduate-friendly; 3 yrs RBI at BPCL puts you above typical grad', link:'https://velosiaims.com/careers/', referral:false},
+  {id:9,  role:'Asset Integrity Engineer',       company:'Altrad',                 location:'Warrington',           tier:'A', status:'Interested', date:'', notes:'Direct RBI match, UK refineries & offshore', link:'', referral:false},
+  {id:10, role:'Asset Integrity Engineer',       company:'Baker Hughes',           location:'Liverpool',            tier:'A', status:'Interested', date:'', notes:'Local match, corrosion/integrity management; Python a plus', link:'', referral:false},
+  // ── TIER B (Tier 2 from target doc + strong Tier B roles) ─────────────────
+  {id:11, role:'Graduate Programme / Integrity', company:'Equinor',                location:'UK / Norway',          tier:'B', status:'Interested', date:'', notes:'Operates Hywind Scotland (spar floating wind) — your dissertation maps directly onto their assets', link:'https://www.equinor.com/careers', referral:false},
+  {id:12, role:'Asset Integrity / Reliability',  company:'RWE Offshore Wind',      location:'North Sea / Germany',  tier:'B', status:'Interested', date:'', notes:'Triton Knoll + expanding O&M team; grad & intern programmes run annually', link:'https://careers.rwe.com/', referral:false},
+  {id:13, role:'Reliability / Asset Management', company:'Ørsted',                 location:'Grimsby / Barrow / GY',tier:'B', status:'Interested', date:'', notes:'World\'s largest offshore wind operator; O&M hubs across UK East coast', link:'https://orsted.com/en/careers', referral:false},
+  {id:14, role:'Integrity / Reliability Eng.',   company:'Wood PLC',               location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'Offshore wind integrity consulting, lifetime extension, OPEX optimisation', link:'https://www.woodplc.com/careers', referral:false},
+  {id:15, role:'Graduate / Maintenance Eng.',    company:'Aker Solutions',         location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'EMM segment offshore maintenance + renewables floating wind projects (Equinor contracts)', link:'https://www.akersolutions.com/careers/', referral:false},
+  {id:16, role:'Intern / Inspection Engineer',   company:'DeepOcean',              location:'Norway / North Sea',   tier:'B', status:'Interested', date:'', notes:'Subsea IMR specialist; structured summer internship includes 2 weeks offshore — rare grad exposure', link:'https://www.deepocean.no/career', referral:false},
+  {id:17, role:'Inspection / Integrity Eng.',    company:'Bilfinger SE',           location:'UK (Offshore)',        tier:'B', status:'Interested', date:'', notes:'Top offshore inspection & industrial maintenance company actively hiring UK grads now', link:'https://www.bilfinger.com/en/careers/', referral:false},
+  {id:18, role:'Reliability / Service Eng.',     company:'Siemens Gamesa',         location:'Hull / Humberside',    tier:'B', status:'Interested', date:'', notes:'Turbine OEM; ageing assets = growing demand for reliability engineering skills', link:'https://www.siemensgamesa.com/en-int/careers', referral:false},
+  {id:19, role:'Graduate / Reliability Eng.',    company:'Vestas',                 location:'UK (Offshore Wind)',   tier:'B', status:'Interested', date:'', notes:'Your OPEX reduction research is directly relevant to their service division', link:'https://www.vestas.com/en/careers', referral:false},
+  {id:20, role:'Pipeline Integrity Specialist',  company:'Oceaneering',            location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'RBI methodology match', link:'https://www.oceaneering.com/careers/', referral:false},
+  {id:21, role:'RBI Engineer – Marine Structures',company:'Petrofac',              location:'Aberdeen',             tier:'B', status:'Interested', date:'', notes:'Direct dissertation methodology match', link:'', referral:false},
+  {id:22, role:'Offshore Maintenance & Reliability',company:'Shell UK',            location:'Norfolk',              tier:'B', status:'Interested', date:'', notes:'CBM / RCA background match', link:'', referral:false},
+  {id:23, role:'Corrosion Engineer – Integrity', company:'Baker Hughes',           location:'Liverpool',            tier:'B', status:'Interested', date:'', notes:'Inhibitor evaluation, integrity tech', link:'', referral:false},
+  {id:24, role:'Senior Structural Integrity Eng.',company:'Amentum',               location:'Remote / Warrington',  tier:'B', status:'Interested', date:'', notes:'Abaqus / FEA match', link:'', referral:false},
+  {id:25, role:'Mechanical Engineer – NDT',       company:'ALTEN UK',              location:'UK (various)',          tier:'B', status:'Interested', date:'', notes:'Pressure vessels, ASME/API, fracture mechanics, NDT', link:'', referral:false},
+  {id:26, role:'Inspections Engineer',            company:'SGS',                   location:'Field-based UK',        tier:'B', status:'Interested', date:'', notes:'UT/RT/MPI competencies match', link:'', referral:false},
+  // ── TIER C (Tier 3 from target doc) ──────────────────────────────────────
+  {id:27, role:'Graduate Engineer (Marine / Offshore)',company:'COWI',             location:'London',               tier:'C', status:'Interested', date:'', notes:'Summer 2026 intake; structural integrity, fatigue, material behaviour', link:'https://www.cowi.com/careers', referral:false},
+  {id:28, role:'Asset Integrity / RBI Consultant',company:'KBR',                  location:'UK / Global',          tier:'C', status:'Interested', date:'', notes:'API 580 knowledge valued; active offshore RBI projects moving into renewables', link:'https://www.kbrjobs.com/', referral:false},
+  {id:29, role:'Inspector / Engineer',            company:'TÜV Rheinland',         location:'UK',                   tier:'C', status:'Interested', date:'', notes:'Expanding into offshore wind structural assessment; NDT + integrity background fits', link:'https://www.tuv.com/world/en/about-tuv-rheinland/career.html', referral:false},
+  {id:30, role:'Project / NDT Engineer',          company:'Element Materials Tech.',location:'UK (Offshore)',       tier:'C', status:'Interested', date:'', notes:'Structural analysis, NDT, FFS, damage mechanisms for offshore/energy', link:'https://www.element.com/careers', referral:false},
+  {id:31, role:'Research / Reliability Engineer', company:'ORE Catapult',          location:'UK (Offshore Wind)',   tier:'C', status:'Interested', date:'', notes:'UK national offshore renewables R&D hub; O&M and reliability improvement roles', link:'https://ore.catapult.org.uk/careers/', referral:false},
+  {id:32, role:'Offshore Wind Ops Intern',        company:'RWE Offshore Wind',     location:'Germany / North Sea',  tier:'C', status:'Interested', date:'', notes:'Annual intern programme', link:'https://careers.rwe.com/', referral:false},
+];
+
+let jobs = load();
 let currentFilter = 'all';
+let nextId = Math.max(...jobs.map(j => j.id), 0) + 1;
 
-async function loadInitialData() {
+function load() {
   try {
-    const res = await fetch('jobs.json');
-    const initialJobs = await res.json();
-    
-    const saved = localStorage.getItem('xavierJobTracker');
-    if (saved) {
-      jobs = JSON.parse(saved);
-    } else {
-      jobs = initialJobs;
-      localStorage.setItem('xavierJobTracker', JSON.stringify(jobs));
-    }
-  } catch(e) {
-    console.error("Could not load jobs.json", e);
-    jobs = [];
-  }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_JOBS));
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULT_JOBS)); }
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs)); } catch(e) {}
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+function cycleStatus(id) {
+  const j = jobs.find(x => x.id === id);
+  if (!j) return;
+  j.status = STATUSES[(STATUSES.indexOf(j.status) + 1) % STATUSES.length];
+  save(); render();
+  showToast('Status → ' + j.status);
+}
+
+function updateField(id, field, val) {
+  const j = jobs.find(x => x.id === id);
+  if (j) { j[field] = val; save(); }
+}
+
+function deleteRow(id) {
+  jobs = jobs.filter(x => x.id !== id);
+  save(); render();
+  showToast('Role removed');
+}
+
+function addRow() {
+  jobs.push({ id: nextId++, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false });
+  save(); render();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
   render();
 }
 
-function saveData() {
-  localStorage.setItem('xavierJobTracker', JSON.stringify(jobs));
+function exportCSV() {
+  const headers = ['Role','Company','Location','Tier','Status','Date Applied','Notes','Link'];
+  const rows = jobs.map(j => [j.role,j.company,j.location,j.tier,j.status,j.date,j.notes,j.link||''].map(v => '"' + (v||'').replace(/"/g,'""') + '"'));
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'xavier-job-tracker.csv';
+  a.click();
+  showToast('CSV exported');
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function render() {
+  const query = document.getElementById('search').value.toLowerCase();
   const filtered = jobs.filter(j => {
-    if (currentFilter === 'all') return true;
-    if (['A','B','C'].includes(currentFilter)) return j.tier === currentFilter;
-    return j.status === currentFilter;
+    const tierMatch = ['all','A','B','C'].includes(currentFilter)
+      ? (currentFilter === 'all' || j.tier === currentFilter)
+      : j.status === currentFilter;
+    const searchMatch = !query || (j.role+j.company+j.location+j.notes).toLowerCase().includes(query);
+    return tierMatch && searchMatch;
   });
 
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
-
-  filtered.forEach((job, fi) => {
-    const realIdx = jobs.indexOf(job);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="wrap-text"><strong>${job.role}</strong><br><span style="color:#64748b;font-size:13px">${job.company}</span></td>
-      <td>${job.location || ''}</td>
-      <td><span class="tier tier-${job.tier.toLowerCase()}">${job.tier}</span></td>
-      <td><span class="status-pill ${STATUS_CLASS[job.status]}" onclick="cycleStatus(${realIdx})">${job.status}</span></td>
-      <td><input type="date" class="notes-input" value="${job.date || ''}" onchange="updateDate(${realIdx}, this.value)"></td>
-      <td style="display:flex;gap:8px;align-items:center">
-        <input class="notes-input" placeholder="Add notes..." value="${job.notes || ''}" onchange="updateNote(${realIdx}, this.value)">
-        <button class="del-btn" onclick="deleteRow(${realIdx})">🗑</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = filtered.length === 0
+    ? '<tr><td colspan="8"><div class="empty">no roles match this filter</div></td></tr>'
+    : filtered.map(j => `
+      <tr>
+        <td>
+          <div class="role-name">${esc(j.role)}${j.referral ? '<span class="referral-tag">REFERRAL</span>' : ''}</div>
+          <div class="company-name">${esc(j.company)}</div>
+        </td>
+        <td style="color:var(--muted);font-size:12px">${esc(j.location)}</td>
+        <td><span class="tier-badge tier-${j.tier}">${j.tier}</span></td>
+        <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
+        <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateField(${j.id},'date',this.value)"></td>
+        <td><input type="text" class="inline-input" value="${esc(j.notes)}" placeholder="Add notes…" onchange="updateField(${j.id},'notes',this.value)"></td>
+        <td>${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>` : ''}</td>
+        <td><button class="del-btn" onclick="deleteRow(${j.id})" title="Remove">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button></td>
+      </tr>`).join('');
 
   document.getElementById('st-total').textContent = jobs.length;
   document.getElementById('st-applied').textContent = jobs.filter(j => j.status === 'Applied').length;
   document.getElementById('st-interview').textContent = jobs.filter(j => j.status === 'Interview').length;
   document.getElementById('st-offer').textContent = jobs.filter(j => j.status === 'Offer').length;
+  document.getElementById('st-tierA').textContent = jobs.filter(j => j.tier === 'A').length;
+  document.getElementById('st-tierB').textContent = jobs.filter(j => j.tier === 'B').length;
 }
 
-function cycleStatus(idx) {
-  const i = STATUSES.indexOf(jobs[idx].status);
-  jobs[idx].status = STATUSES[(i + 1) % STATUSES.length];
-  saveData();
-  render();
-}
-
-function updateNote(idx, val) {
-  jobs[idx].notes = val;
-  saveData();
-}
-
-function updateDate(idx, val) {
-  jobs[idx].date = val;
-  saveData();
-}
-
-function deleteRow(idx) {
-  if (confirm("Delete this role?")) {
-    jobs.splice(idx, 1);
-    saveData();
-    render();
-  }
-}
-
-function addRow() {
-  jobs.push({role:'New Role', company:'Company Name', location:'', tier:'B', status:'Interested', date:'', notes:''});
-  saveData();
-  render();
-}
-
-function filterBy(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-
-function exportData() {
-  const dataStr = JSON.stringify(jobs, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-  const link = document.createElement('a');
-  link.href = dataUri;
-  link.download = `jobs.json`;
-  link.click();
-}
-
-function importFromFile() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      try {
-        jobs = JSON.parse(ev.target.result);
-        saveData();
-        render();
-        alert('✅ Imported!');
-      } catch(err) {
-        alert('❌ Invalid JSON');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-function resetToInitial() {
-  if (confirm("Reset to original data from jobs.json?")) {
-    localStorage.removeItem('xavierJobTracker');
-    location.reload();
-  }
-}
-
-// Initialize
-loadInitialData();
+render();
 </script>
 </body>
 </html>
