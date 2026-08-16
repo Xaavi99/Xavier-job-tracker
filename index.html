@@ -240,6 +240,7 @@ const SEED = [
 const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
+let atsScores = {};
 let currentFilter = 'all';
 let currentTrack = 'all';
 let debounceTimers = {};
@@ -364,6 +365,19 @@ async function loadJobs() {
     setSyncStatus('error');
     showToast('Could not connect to Supabase', true);
     document.getElementById('tbody').innerHTML = '<tr><td colspan="100%"><div class="loading">Could not load data. Check your connection.</div></td></tr>';
+    return;
+  }
+  await loadAtsScores();
+}
+
+async function loadAtsScores() {
+  try {
+    const rows = await sbFetch('applications?select=job_id,ats_score,created_at&order=created_at.asc');
+    atsScores = {};
+    rows.forEach(r => { if (r.ats_score != null) atsScores[r.job_id] = r.ats_score; });
+    render();
+  } catch(e) {
+    // applications table may not exist yet (SETUP.md step 5b not run) — materials column just omits the score
   }
 }
 
@@ -498,7 +512,7 @@ function render() {
         <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
         <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateFieldLocal(${j.id},'date',this.value)"></td>
         <td><input type="text" class="inline-input" value="${esc(j.notes||'')}" placeholder="Add notes…" oninput="updateFieldLocal(${j.id},'notes',this.value)"></td>
-        <td>${(j.cv_path || j.cover_letter_path) ? `<span class="materials-tag" title="${esc([j.cv_path,j.cover_letter_path].filter(Boolean).join(' · '))}">Ready</span>` : '<span class="materials-none">—</span>'}</td>
+        <td>${(j.cv_path || j.cover_letter_path) ? `<span class="materials-tag" title="${esc([j.cv_path,j.cover_letter_path].filter(Boolean).join(' · '))}">${atsScores[j.id] != null ? 'ATS ' + atsScores[j.id] : 'Ready'}</span>` : '<span class="materials-none">—</span>'}</td>
         <td>${j.link && /^https?:\/\//i.test(j.link) ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>` : ''}</td>

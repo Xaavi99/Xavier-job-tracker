@@ -74,6 +74,43 @@ curl "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs?select=id&limit=1" -
 
 Before this fix that returns a row. After it, it should return `[]` or a 401/permission error — confirming anonymous access is closed.
 
+## 5b. Applications table (tailored CV + ATS score + cover letter)
+
+SQL Editor → run:
+
+```sql
+create table if not exists applications (
+  id bigint generated always as identity primary key,
+  job_id bigint references jobs(id) on delete cascade,
+  track text not null check (track in ('industry','europe','phd')),
+  cv_content text not null,
+  cover_letter_content text not null,
+  ats_score int,
+  ats_notes text,
+  created_at timestamptz default now()
+);
+
+alter table applications enable row level security;
+
+create policy "Authenticated read" on applications
+  for select using (auth.role() = 'authenticated');
+create policy "Authenticated insert" on applications
+  for insert with check (auth.role() = 'authenticated');
+create policy "Authenticated update" on applications
+  for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "Authenticated delete" on applications
+  for delete using (auth.role() = 'authenticated');
+```
+
+Unlike `jobs`, `id` here is a real auto-incrementing identity column — no need to compute the next id yourself on insert.
+
+**Also run this** — new tables created via the SQL editor don't automatically get Supabase's baseline role grants the way `jobs` did (it predates this table and already had them). Without this, every request gets a `permission denied for table applications` error before RLS even applies:
+
+```sql
+grant select, insert, update, delete on public.applications to anon, authenticated, service_role;
+grant usage, select on all sequences in schema public to anon, authenticated, service_role;
+```
+
 ## 5. Service role key for local agent commands
 
 Settings → API → copy the **service_role** key (not anon). Paste it into `.env.local` in this repo (already gitignored — never commit it):
