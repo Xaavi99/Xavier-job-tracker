@@ -51,8 +51,8 @@
   table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
   thead th{text-align:left;padding:12px 14px;font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border)}
   col.c-role{width:20%}col.c-loc{width:12%}col.c-tier{width:7%}
-  col.c-status{width:12%}col.c-date{width:12%}col.c-notes{width:28%}
-  col.c-link{width:5%}col.c-del{width:4%}
+  col.c-status{width:12%}col.c-date{width:12%}col.c-notes{width:20%}
+  col.c-materials{width:8%}col.c-link{width:5%}col.c-del{width:4%}
   tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
   tbody tr:last-child{border-bottom:none}
   tbody tr:hover{background:var(--surface2)}
@@ -78,16 +78,47 @@
   .link-btn:hover{color:var(--accent)}
   .del-btn{background:none;border:none;color:#3a3a3e;cursor:pointer;padding:4px;transition:color 0.15s;line-height:1;display:flex;align-items:center}
   .del-btn:hover{color:var(--red)}
-  .referral-tag{font-family:var(--font-mono);font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(200,255,87,0.15);color:var(--accent);border:1px solid rgba(200,255,87,0.3);margin-left:4px;vertical-align:middle}
+  .tag-inline{font-family:var(--font-mono);font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;border:1px solid}
+  .referral-tag{background:rgba(200,255,87,0.15);color:var(--accent);border-color:rgba(200,255,87,0.3)}
+  .track-europe{background:rgba(92,164,255,0.15);color:var(--blue);border-color:rgba(92,164,255,0.3)}
+  .track-phd{background:rgba(184,157,255,0.15);color:var(--purple);border-color:rgba(184,157,255,0.3)}
+  .materials-tag{font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(92,164,255,0.1);color:var(--blue);border:1px solid rgba(92,164,255,0.2);white-space:nowrap;cursor:default}
+  .materials-none{color:#3a3a3e;font-size:11px}
   .loading{text-align:center;padding:4rem;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em}
   .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:12px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;font-family:var(--font-mono);color:var(--accent);opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none;z-index:100}
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.error-toast{color:var(--red);border-color:rgba(255,92,92,0.3)}
+  .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200}
+  .login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:320px;display:flex;flex-direction:column;gap:14px}
+  .login-card h2{font-size:16px;font-weight:500}
+  .login-card label{font-size:11px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block}
+  .login-card input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);padding:8px 10px;font-family:var(--font-body);font-size:13px;outline:none}
+  .login-card input:focus{border-color:var(--accent)}
+  .login-error{font-size:11px;color:var(--red);font-family:var(--font-mono);min-height:14px}
+  .hidden{display:none !important}
 </style>
 </head>
 <body>
+
+<div class="login-screen hidden" id="login-screen">
+  <form class="login-card" id="login-form">
+    <h2>Sign in</h2>
+    <div>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required autocomplete="username">
+    </div>
+    <div>
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" required autocomplete="current-password">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button type="submit" class="btn btn-accent" style="justify-content:center">Sign in</button>
+  </form>
+</div>
+
+<div id="app" class="hidden">
 
 <header>
   <div class="brand">
@@ -107,6 +138,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add role
     </button>
+    <button class="btn" onclick="signOut()">Sign out</button>
   </div>
 </header>
 
@@ -117,6 +149,13 @@
   <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">—</div></div>
   <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">—</div></div>
   <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">—</div></div>
+</div>
+
+<div class="controls">
+  <button class="filter-pill track-pill active" onclick="setTrack('all',this)">All tracks</button>
+  <button class="filter-pill track-pill" onclick="setTrack('industry',this)">Industry</button>
+  <button class="filter-pill track-pill" onclick="setTrack('europe',this)">Europe</button>
+  <button class="filter-pill track-pill" onclick="setTrack('phd',this)">PhD</button>
 </div>
 
 <div class="controls">
@@ -137,21 +176,23 @@
   <table>
     <colgroup>
       <col class="c-role"><col class="c-loc"><col class="c-tier">
-      <col class="c-status"><col class="c-date"><col class="c-notes"><col class="c-link"><col class="c-del">
+      <col class="c-status"><col class="c-date"><col class="c-notes"><col class="c-materials"><col class="c-link"><col class="c-del">
     </colgroup>
     <thead>
       <tr>
         <th>Role / Company</th><th>Location</th><th>Tier</th>
-        <th>Status</th><th>Date applied</th><th>Notes</th><th>Link</th><th></th>
+        <th>Status</th><th>Date applied</th><th>Notes</th><th>Materials</th><th>Link</th><th></th>
       </tr>
     </thead>
     <tbody id="tbody">
-      <tr><td colspan="8"><div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div></td></tr>
+      <tr><td colspan="100%"><div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div></td></tr>
     </tbody>
   </table>
 </div>
 
 <div class="toast" id="toast"></div>
+
+</div>
 
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
@@ -197,18 +238,93 @@ const SEED = [
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
+const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let currentFilter = 'all';
+let currentTrack = 'all';
 let debounceTimers = {};
 
-// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
-const headers = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=minimal'
-};
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+const SESSION_KEY = 'xjt_session';
 
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e) { return null; }
+}
+function setSession(s) { localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+function clearSession() { localStorage.removeItem(SESSION_KEY); }
+
+function authHeaders() {
+  const s = getSession();
+  return {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + (s && s.access_token ? s.access_token : SB_KEY),
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
+}
+
+async function authRequest(grantType, body) {
+  const res = await fetch(SB_URL + '/auth/v1/token?grant_type=' + grantType, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || 'Auth failed');
+  return data;
+}
+
+async function refreshSession() {
+  const s = getSession();
+  if (!s || !s.refresh_token) return false;
+  try {
+    const data = await authRequest('refresh_token', { refresh_token: s.refresh_token });
+    setSession({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in * 1000) });
+    return true;
+  } catch(e) {
+    clearSession();
+    return false;
+  }
+}
+
+async function trySession() {
+  const s = getSession();
+  if (!s) return false;
+  if (s.expires_at && Date.now() < s.expires_at - 30000) return true;
+  return await refreshSession();
+}
+
+function showLogin() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+}
+
+async function signOut() {
+  clearSession();
+  location.reload();
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  try {
+    const data = await authRequest('password', { email, password });
+    setSession({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in * 1000) });
+    showApp();
+    loadJobs();
+  } catch(err) {
+    errEl.textContent = 'Sign in failed — check your email and password';
+  }
+});
+
+// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
 function setSyncStatus(state) {
   const dot = document.getElementById('sync-dot');
   const label = document.getElementById('sync-label');
@@ -217,8 +333,15 @@ function setSyncStatus(state) {
   if (state === 'saved') setTimeout(() => setSyncStatus(''), 2000);
 }
 
-async function sbFetch(path, options = {}) {
-  const res = await fetch(SB_URL + '/rest/v1/' + path, { ...options, headers: { ...headers, ...(options.headers||{}) } });
+async function sbFetch(path, options = {}, retried = false) {
+  const res = await fetch(SB_URL + '/rest/v1/' + path, { ...options, headers: { ...authHeaders(), ...(options.headers||{}) } });
+  if (res.status === 401) {
+    const refreshed = !retried && await refreshSession();
+    if (refreshed) return sbFetch(path, options, true);
+    clearSession();
+    showLogin();
+    throw new Error('Session expired');
+  }
   if (!res.ok) {
     const err = await res.text();
     throw new Error(err);
@@ -240,7 +363,7 @@ async function loadJobs() {
   } catch(e) {
     setSyncStatus('error');
     showToast('Could not connect to Supabase', true);
-    document.getElementById('tbody').innerHTML = '<tr><td colspan="8"><div class="loading">Could not load data. Check your connection.</div></td></tr>';
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="100%"><div class="loading">Could not load data. Check your connection.</div></td></tr>';
   }
 }
 
@@ -313,17 +436,25 @@ async function deleteRow(id) {
 
 async function addRow() {
   const newId = Math.max(...jobs.map(j => j.id), 0) + 1;
-  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false };
+  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false, track: 'industry' };
   jobs.push(job);
   render();
   await insertJob(job);
 }
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+function activatePill(scopeSelector, setter, value, btn) {
+  setter(value);
+  document.querySelectorAll(scopeSelector).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   render();
+}
+
+function setFilter(f, btn) {
+  activatePill('.filter-pill:not(.track-pill)', v => currentFilter = v, f, btn);
+}
+
+function setTrack(t, btn) {
+  activatePill('.track-pill', v => currentTrack = v, t, btn);
 }
 
 function exportCSV() {
@@ -348,25 +479,27 @@ function render() {
     const tierMatch = ['all','A','B','C'].includes(currentFilter)
       ? (currentFilter === 'all' || j.tier === currentFilter)
       : j.status === currentFilter;
+    const trackMatch = currentTrack === 'all' || (j.track || 'industry') === currentTrack;
     const searchMatch = !query || (j.role+j.company+j.location+(j.notes||'')).toLowerCase().includes(query);
-    return tierMatch && searchMatch;
+    return tierMatch && trackMatch && searchMatch;
   });
 
   const tb = document.getElementById('tbody');
   tb.innerHTML = filtered.length === 0
-    ? '<tr><td colspan="8"><div class="loading">no roles match this filter</div></td></tr>'
+    ? '<tr><td colspan="100%"><div class="loading">no roles match this filter</div></td></tr>'
     : filtered.map(j => `
       <tr>
         <td>
-          <div class="role-name">${esc(j.role)}${j.referral ? '<span class="referral-tag">REFERRAL</span>' : ''}</div>
-          <div class="company-name">${esc(j.company)}</div>
+          <div class="role-name">${esc(j.role)}${j.referral ? '<span class="tag-inline referral-tag">REFERRAL</span>' : ''}</div>
+          <div class="company-name">${esc(j.company)}${TRACK_BADGE[j.track] ? `<span class="tag-inline track-${j.track}">${TRACK_BADGE[j.track]}</span>` : ''}</div>
         </td>
         <td style="color:var(--muted);font-size:12px">${esc(j.location)}</td>
         <td><span class="tier-badge tier-${j.tier}">${j.tier}</span></td>
         <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
         <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateFieldLocal(${j.id},'date',this.value)"></td>
         <td><input type="text" class="inline-input" value="${esc(j.notes||'')}" placeholder="Add notes…" oninput="updateFieldLocal(${j.id},'notes',this.value)"></td>
-        <td>${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
+        <td>${(j.cv_path || j.cover_letter_path) ? `<span class="materials-tag" title="${esc([j.cv_path,j.cover_letter_path].filter(Boolean).join(' · '))}">Ready</span>` : '<span class="materials-none">—</span>'}</td>
+        <td>${j.link && /^https?:\/\//i.test(j.link) ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>` : ''}</td>
         <td><button class="del-btn" onclick="deleteRow(${j.id})" title="Remove">
@@ -390,7 +523,11 @@ function showToast(msg, isError = false) {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-loadJobs();
+(async function init() {
+  const ok = await trySession();
+  if (ok) { showApp(); loadJobs(); }
+  else { showLogin(); }
+})();
 </script>
 </body>
 </html>
