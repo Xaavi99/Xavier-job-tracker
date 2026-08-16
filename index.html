@@ -219,9 +219,13 @@
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-actions">
-      <button class="btn btn-accent" onclick="downloadCurrentTab()">
+      <button class="btn btn-accent" onclick="downloadCurrentTab('docx')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download
+        Download .docx
+      </button>
+      <button class="btn" onclick="downloadCurrentTab('pdf')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download .pdf
       </button>
       <button class="btn" onclick="copyCurrentTab()">Copy text</button>
     </div>
@@ -230,6 +234,8 @@
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5/build/index.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const SB_URL = 'https://nthonxtycsyplkmpwjrh.supabase.co';
@@ -546,21 +552,149 @@ function slugify(s) {
   return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-function downloadText(filename, content) {
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
-  a.download = filename;
-  a.click();
+// ── MARKDOWN → STRUCTURED DOCUMENT (ATS-safe: real text, single column, no tables/images) ──
+function parseMarkdownBlocks(md) {
+  const lines = (md || '').replace(/\r\n/g, '\n').split('\n');
+  const blocks = [];
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    if (line.trim() === '') { blocks.push({ type: 'blank' }); continue; }
+    if (line.startsWith('# ')) { blocks.push({ type: 'h1', text: line.slice(2).trim() }); continue; }
+    if (line.startsWith('## ')) { blocks.push({ type: 'h2', text: line.slice(3).trim() }); continue; }
+    if (line.startsWith('- ') || line.startsWith('* ')) { blocks.push({ type: 'bullet', text: line.slice(2).trim() }); continue; }
+    blocks.push({ type: 'para', text: line.trim() });
+  }
+  return blocks;
 }
 
-function downloadCurrentTab() {
+function parseInlineBold(text) {
+  const parts = [];
+  const re = /\*\*(.+?)\*\*/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index), bold: false });
+    parts.push({ text: m[1], bold: true });
+    last = re.lastIndex;
+  }
+  if (last < text.length) parts.push({ text: text.slice(last), bold: false });
+  if (parts.length === 0) parts.push({ text, bold: false });
+  return parts;
+}
+
+async function buildDocxBlob(markdown) {
+  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
+  const blocks = parseMarkdownBlocks(markdown);
+  const children = [];
+  for (const b of blocks) {
+    if (b.type === 'blank') continue;
+    if (b.type === 'h1') {
+      children.push(new Paragraph({ text: b.text, heading: HeadingLevel.HEADING_1, spacing: { after: 160 } }));
+      continue;
+    }
+    if (b.type === 'h2') {
+      children.push(new Paragraph({ text: b.text, heading: HeadingLevel.HEADING_2, spacing: { before: 220, after: 100 } }));
+      continue;
+    }
+    const runs = parseInlineBold(b.text).map(p => new TextRun({ text: p.text, bold: p.bold }));
+    if (b.type === 'bullet') {
+      children.push(new Paragraph({ children: runs, bullet: { level: 0 }, spacing: { after: 60 } }));
+    } else {
+      children.push(new Paragraph({ children: runs, spacing: { after: 140 } }));
+    }
+  }
+  const doc = new Document({
+    sections: [{ properties: {}, children }],
+    styles: { default: { document: { run: { font: 'Calibri', size: 22 } } } }
+  });
+  return await Packer.toBlob(doc);
+}
+
+async function downloadDocx(filename, markdown) {
+  const blob = await buildDocxBlob(markdown);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function downloadPdf(filename, markdown) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const marginX = 50, maxWidth = 495, pageBottom = 792;
+  let y = 56;
+  const lineHeight = 14;
+
+  function ensureSpace(extra) {
+    if (y + extra > pageBottom) { doc.addPage(); y = 56; }
+  }
+
+  function renderRuns(runs, x, fontSize) {
+    doc.setFontSize(fontSize);
+    let cursorX = x;
+    for (const r of runs) {
+      doc.setFont('helvetica', r.bold ? 'bold' : 'normal');
+      const words = r.text.split(/(\s+)/);
+      for (const w of words) {
+        if (w === '') continue;
+        const wWidth = doc.getTextWidth(w);
+        if (cursorX + wWidth > marginX + maxWidth && w.trim() !== '') {
+          y += lineHeight; ensureSpace(lineHeight); cursorX = x;
+        }
+        if (w.trim() !== '' || cursorX > x) doc.text(w, cursorX, y);
+        cursorX += wWidth;
+      }
+    }
+    y += lineHeight;
+  }
+
+  const blocks = parseMarkdownBlocks(markdown);
+  for (const b of blocks) {
+    if (b.type === 'blank') { y += lineHeight * 0.4; continue; }
+    if (b.type === 'h1') {
+      ensureSpace(lineHeight * 1.6);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+      doc.text(b.text, marginX, y); y += lineHeight * 1.7;
+      continue;
+    }
+    if (b.type === 'h2') {
+      y += lineHeight * 0.4;
+      ensureSpace(lineHeight * 1.4);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(12.5);
+      doc.text(b.text, marginX, y); y += lineHeight * 1.4;
+      continue;
+    }
+    ensureSpace(lineHeight);
+    const runs = parseInlineBold(b.text);
+    if (b.type === 'bullet') {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(10.5);
+      doc.text('•', marginX, y);
+      renderRuns(runs, marginX + 14, 10.5);
+    } else {
+      renderRuns(runs, marginX, 10.5);
+    }
+  }
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function downloadCurrentTab(format) {
   if (!modalState) return;
   const { job, app, tab } = modalState;
   const slug = slugify(job.company) + '-' + slugify(job.role);
   const label = tab === 'cv' ? 'cv' : (job.track === 'phd' ? 'personal-statement' : 'cover-letter');
   const text = tab === 'cv' ? app.cv_content : app.cover_letter_content;
-  downloadText(slug + '-' + label + '.txt', text || '');
-  showToast('Downloaded');
+  if (!text) { showToast('Nothing to download', true); return; }
+  if (format === 'pdf') {
+    downloadPdf(slug + '-' + label + '.pdf', text);
+    showToast('Downloaded PDF');
+  } else {
+    downloadDocx(slug + '-' + label + '.docx', text)
+      .then(() => showToast('Downloaded Word document'))
+      .catch(() => showToast('Download failed — try the PDF option', true));
+  }
 }
 
 async function copyCurrentTab() {
