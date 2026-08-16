@@ -82,7 +82,8 @@
   .referral-tag{background:rgba(200,255,87,0.15);color:var(--accent);border-color:rgba(200,255,87,0.3)}
   .track-europe{background:rgba(92,164,255,0.15);color:var(--blue);border-color:rgba(92,164,255,0.3)}
   .track-phd{background:rgba(184,157,255,0.15);color:var(--purple);border-color:rgba(184,157,255,0.3)}
-  .materials-tag{font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(92,164,255,0.1);color:var(--blue);border:1px solid rgba(92,164,255,0.2);white-space:nowrap;cursor:default}
+  .materials-tag{font-family:var(--font-mono);font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(92,164,255,0.1);color:var(--blue);border:1px solid rgba(92,164,255,0.2);white-space:nowrap;cursor:pointer;transition:opacity 0.15s}
+  .materials-tag:hover{opacity:0.75}
   .materials-none{color:#3a3a3e;font-size:11px}
   .loading{text-align:center;padding:4rem;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em}
   .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:12px}
@@ -98,6 +99,19 @@
   .login-card input:focus{border-color:var(--accent)}
   .login-error{font-size:11px;color:var(--red);font-family:var(--font-mono);min-height:14px}
   .hidden{display:none !important}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:300;padding:2rem}
+  .modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border)}
+  .modal-header h2{font-size:15px;font-weight:500}
+  .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:4px}
+  .modal-close:hover{color:var(--text)}
+  .modal-ats{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:baseline}
+  .modal-ats .score{color:var(--blue);font-weight:500}
+  .modal-tabs{display:flex;gap:6px;padding:0.75rem 1.25rem 0}
+  .modal-tab{font-family:var(--font-mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
+  .modal-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .modal-body{padding:1.25rem;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.6}
+  .modal-actions{display:flex;gap:8px;padding:1rem 1.25rem;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -192,6 +206,28 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="modal-overlay hidden" id="materials-modal" onclick="if(event.target===this)closeMaterials()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 id="modal-title">Materials</h2>
+      <button class="modal-close" onclick="closeMaterials()">&times;</button>
+    </div>
+    <div class="modal-ats" id="modal-ats"></div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-cv" onclick="showMaterialsTab('cv')">CV</button>
+      <button class="modal-tab" id="tab-cl" onclick="showMaterialsTab('cl')">Cover letter</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-accent" onclick="downloadCurrentTab()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="btn" onclick="copyCurrentTab()">Copy text</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -240,7 +276,7 @@ const SEED = [
 const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
-let atsScores = {};
+let applicationsMap = {};
 let currentFilter = 'all';
 let currentTrack = 'all';
 let debounceTimers = {};
@@ -367,14 +403,14 @@ async function loadJobs() {
     document.getElementById('tbody').innerHTML = '<tr><td colspan="100%"><div class="loading">Could not load data. Check your connection.</div></td></tr>';
     return;
   }
-  await loadAtsScores();
+  await loadApplications();
 }
 
-async function loadAtsScores() {
+async function loadApplications() {
   try {
-    const rows = await sbFetch('applications?select=job_id,ats_score,created_at&order=created_at.asc');
-    atsScores = {};
-    rows.forEach(r => { if (r.ats_score != null) atsScores[r.job_id] = r.ats_score; });
+    const rows = await sbFetch('applications?select=job_id,cv_content,cover_letter_content,ats_score,ats_notes,created_at&order=created_at.asc');
+    applicationsMap = {};
+    rows.forEach(r => { applicationsMap[r.job_id] = r; });
     render();
   } catch(e) {
     // applications table may not exist yet (SETUP.md step 5b not run) — materials column just omits the score
@@ -471,6 +507,73 @@ function setTrack(t, btn) {
   activatePill('.track-pill', v => currentTrack = v, t, btn);
 }
 
+// ── MATERIALS MODAL ──────────────────────────────────────────────────────────
+let modalState = null;
+
+function openMaterials(jobId) {
+  const app = applicationsMap[jobId];
+  const job = jobs.find(j => j.id === jobId);
+  if (!app || !job) return;
+  modalState = { job, app, tab: 'cv' };
+  document.getElementById('modal-title').textContent = job.company + ' — ' + job.role;
+  document.getElementById('modal-ats').innerHTML = app.ats_score != null
+    ? `<span class="score">ATS ${app.ats_score}/100</span><span>${esc(app.ats_notes || '')}</span>`
+    : '<span>No ATS score recorded</span>';
+  document.getElementById('tab-cl').textContent = job.track === 'phd' ? 'Personal statement' : 'Cover letter';
+  showMaterialsTab('cv');
+  document.getElementById('materials-modal').classList.remove('hidden');
+}
+
+function closeMaterials() {
+  document.getElementById('materials-modal').classList.add('hidden');
+  modalState = null;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modalState) closeMaterials();
+});
+
+function showMaterialsTab(tab) {
+  if (!modalState) return;
+  modalState.tab = tab;
+  document.getElementById('tab-cv').classList.toggle('active', tab === 'cv');
+  document.getElementById('tab-cl').classList.toggle('active', tab === 'cl');
+  const text = tab === 'cv' ? modalState.app.cv_content : modalState.app.cover_letter_content;
+  document.getElementById('modal-body').textContent = text || '(empty)';
+}
+
+function slugify(s) {
+  return (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function downloadText(filename, content) {
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+  a.download = filename;
+  a.click();
+}
+
+function downloadCurrentTab() {
+  if (!modalState) return;
+  const { job, app, tab } = modalState;
+  const slug = slugify(job.company) + '-' + slugify(job.role);
+  const label = tab === 'cv' ? 'cv' : (job.track === 'phd' ? 'personal-statement' : 'cover-letter');
+  const text = tab === 'cv' ? app.cv_content : app.cover_letter_content;
+  downloadText(slug + '-' + label + '.txt', text || '');
+  showToast('Downloaded');
+}
+
+async function copyCurrentTab() {
+  if (!modalState) return;
+  const text = modalState.tab === 'cv' ? modalState.app.cv_content : modalState.app.cover_letter_content;
+  try {
+    await navigator.clipboard.writeText(text || '');
+    showToast('Copied to clipboard');
+  } catch(e) {
+    showToast('Copy failed — select and copy manually', true);
+  }
+}
+
 function exportCSV() {
   const headers = ['Role','Company','Location','Tier','Status','Date Applied','Notes','Link'];
   const rows = jobs.map(j => [j.role,j.company,j.location,j.tier,j.status,j.date||'',j.notes||'',j.link||''].map(v => '"' + (v||'').replace(/"/g,'""') + '"'));
@@ -512,7 +615,7 @@ function render() {
         <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
         <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateFieldLocal(${j.id},'date',this.value)"></td>
         <td><input type="text" class="inline-input" value="${esc(j.notes||'')}" placeholder="Add notes…" oninput="updateFieldLocal(${j.id},'notes',this.value)"></td>
-        <td>${(j.cv_path || j.cover_letter_path) ? `<span class="materials-tag" title="${esc([j.cv_path,j.cover_letter_path].filter(Boolean).join(' · '))}">${atsScores[j.id] != null ? 'ATS ' + atsScores[j.id] : 'Ready'}</span>` : '<span class="materials-none">—</span>'}</td>
+        <td>${applicationsMap[j.id] ? `<span class="materials-tag" onclick="openMaterials(${j.id})" title="View / download">${applicationsMap[j.id].ats_score != null ? 'ATS ' + applicationsMap[j.id].ats_score : 'Ready'}</span>` : '<span class="materials-none">—</span>'}</td>
         <td>${j.link && /^https?:\/\//i.test(j.link) ? `<a href="${esc(j.link)}" target="_blank" rel="noopener" class="link-btn" title="Careers page">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         </a>` : ''}</td>
