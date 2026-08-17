@@ -42,11 +42,14 @@
   .filter-pill{font-family:var(--font-mono);font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.05em}
   .filter-pill:hover{border-color:var(--border2);color:var(--text)}
   .filter-pill.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
-  .search-wrap{margin-left:auto;position:relative}
-  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+  .search-wrap{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .search-input-wrap{position:relative}
+  .search-input-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
   #search{font-family:var(--font-body);font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:6px 12px 6px 32px;width:200px;outline:none;transition:border-color 0.15s}
   #search:focus{border-color:var(--border2)}
   #search::placeholder{color:var(--muted)}
+  #sort-select{font-family:var(--font-mono);font-size:11px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:6px 10px;outline:none;cursor:pointer;transition:border-color 0.15s}
+  #sort-select:focus,#sort-select:hover{border-color:var(--border2)}
   .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
   table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
   thead th{text-align:left;padding:12px 14px;font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border)}
@@ -187,8 +190,16 @@
   <button class="filter-pill" onclick="setFilter('Interview',this)">Interview</button>
   <button class="filter-pill" onclick="setFilter('Offer',this)">Offers</button>
   <div class="search-wrap">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" id="search" placeholder="Search roles…" oninput="render()">
+    <select id="sort-select" onchange="render()">
+      <option value="default">Sort: Default</option>
+      <option value="newest">Sort: Newest added</option>
+      <option value="oldest">Sort: Oldest added</option>
+      <option value="date-desc">Sort: Date applied (latest)</option>
+    </select>
+    <div class="search-input-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search" placeholder="Search roles…" oninput="render()">
+    </div>
   </div>
 </div>
 
@@ -749,6 +760,11 @@ function render() {
     const searchMatch = !query || (j.role+j.company+j.location+(j.notes||'')).toLowerCase().includes(query);
     return tierMatch && trackMatch && materialsMatch && searchMatch;
   });
+
+  const sortMode = document.getElementById('sort-select')?.value || 'default';
+  if (sortMode === 'newest') filtered.sort((a, b) => b.id - a.id);
+  else if (sortMode === 'oldest') filtered.sort((a, b) => a.id - b.id);
+  else if (sortMode === 'date-desc') filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   const tb = document.getElementById('tbody');
   tb.innerHTML = filtered.length === 0
