@@ -195,6 +195,8 @@
       <option value="newest">Sort: Newest added</option>
       <option value="oldest">Sort: Oldest added</option>
       <option value="date-desc">Sort: Date applied (latest)</option>
+      <option value="ats-desc">Sort: ATS score (highest)</option>
+      <option value="ats-asc">Sort: ATS score (lowest)</option>
     </select>
     <div class="search-input-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -765,6 +767,16 @@ function render() {
   if (sortMode === 'newest') filtered.sort((a, b) => b.id - a.id);
   else if (sortMode === 'oldest') filtered.sort((a, b) => a.id - b.id);
   else if (sortMode === 'date-desc') filtered.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  else if (sortMode === 'ats-desc' || sortMode === 'ats-asc') {
+    const dir = sortMode === 'ats-desc' ? -1 : 1;
+    filtered.sort((a, b) => {
+      const av = applicationsMap[a.id]?.ats_score, bv = applicationsMap[b.id]?.ats_score;
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return (av - bv) * dir;
+    });
+  }
 
   const tb = document.getElementById('tbody');
   tb.innerHTML = filtered.length === 0
