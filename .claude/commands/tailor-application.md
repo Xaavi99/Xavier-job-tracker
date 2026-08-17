@@ -26,9 +26,11 @@ Use `jd_text`, `link`, and **`track`** from the matched row. If `jd_text` is emp
 ## 2. Generate CV + cover letter/personal statement (parallel)
 
 ### If `track` is `industry` or `europe`
-Read `profile/cv.md`. If it's still just the placeholder, stop and tell Xavier to paste his CV into it first.
+**First check if this is a graduate scheme**: if the role title or `jd_text` says "graduate", "grad scheme", "graduate programme", "graduate trainee", or "early careers", use `profile/cv-grad.md` as the source CV instead of `profile/cv.md` — it leads with academic credentials (Distinction, dissertation depth) rather than industry experience, which is the stronger opener for schemes that screen on academic performance first. Otherwise use `profile/cv.md` as normal, which leads with the BPCL/RBI experience. Note the choice in the final report to Xavier.
 
-**CV-tailoring subagent** — `general-purpose` Agent (fresh) with a self-contained prompt containing: full `profile/cv.md`, full `profile/voice-notes.md`, the job's `jd_text`/role/company/location, and the constraints above (no fabrication, ATS-parseable, sound like him). Instruction: reorder bullets to surface the most relevant experience first, mirror the JD's own terminology only where it's an honest match. Output: complete tailored CV in Markdown.
+Read the chosen CV source file. If it's still just the placeholder, stop and tell Xavier to fill it in first.
+
+**CV-tailoring subagent** — `general-purpose` Agent (fresh) with a self-contained prompt containing: the full chosen CV source file, full `profile/voice-notes.md`, the job's `jd_text`/role/company/location, and the constraints above (no fabrication, ATS-parseable, sound like him). Instruction: reorder bullets to surface the most relevant experience first, mirror the JD's own terminology only where it's an honest match. Output: complete tailored CV in Markdown.
 
 **Cover-letter subagent** — second `general-purpose` Agent (fresh) with: `profile/background.md`, full `profile/voice-notes.md`, the job's `jd_text`/role/company, and the constraints above. Instruction: concise, specific cover letter referencing 1-2 concrete things about the company/role, connected to Xavier's actual RBI/Asset Integrity background and CTMC/MPC dissertation (49% OPEX reduction, 6% availability improvement, 15MW spar-type case study) where genuinely relevant. No filler. Output: complete cover letter in Markdown.
 

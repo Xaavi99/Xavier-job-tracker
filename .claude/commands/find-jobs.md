@@ -22,7 +22,7 @@ For each track in scope, launch a `general-purpose` Agent (fresh, not a fork) wi
 
 **`industry`**: target roles from `profile/background.md`'s `industry` section (O&M/Reliability/Asset Integrity/RBI/Condition Monitoring/Structural-FEA/adjacent Mechanical grad roles), location UK only. Search LinkedIn Jobs, Indeed, Glassdoor, EnergyJobline, RenewableUK jobs board, and relevant company career pages.
 
-**`europe`**: same target roles, location restricted to **Norway, Denmark, Netherlands only** — do not search other European countries. Search the same boards filtered to those countries plus relevant national boards (e.g. Finn.no, Jobindex.dk, national offshore wind operator career pages — Equinor, Ørsted, RWE/Dutch projects).
+**`europe`**: same target roles, location any European country except the UK — not restricted to a fixed shortlist. Norway, Denmark, and the Netherlands are the densest offshore wind O&M hubs (Equinor, Ørsted, Dutch North Sea projects) and are worth searching first/weighting higher on fit, but also search Germany, Belgium, France, Ireland, and other European offshore wind markets — don't skip a genuinely strong match just because it's outside the original three. Search the same general boards plus relevant national boards (e.g. Finn.no, Jobindex.dk, national offshore wind operator career pages) for whichever countries turn up real roles.
 
 **`phd`**: funded PhD/CDT studentships in offshore wind O&M cost modelling, reliability engineering, predictive maintenance, or digital twins. Search FindAPhD, jobs.ac.uk, and university engineering-department funding/studentship pages — not general job boards. Location is secondary to research fit.
 
