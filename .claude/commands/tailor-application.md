@@ -31,6 +31,8 @@ Use `jd_text`, `link`, and **`track`** from the matched row. If `jd_text` is emp
 
 Read the chosen CV source file. If it's still just the placeholder, stop and tell Xavier to fill it in first.
 
+**This branch — Denmark framing**: read `DENMARK-STRATEGY.md` and pass it in full to both subagents below. Unlike the Norway branch's single-employer pitch, there's no one defining asset to anchor on here — keep the standard BPCL/RBI and CTMC/MPC dissertation framing, but mirror whichever of Ørsted/Vestas/Siemens Gamesa/Vattenfall/RWE/Global Wind Service/Ramboll's own O&M focus shows up in the specific `jd_text` (e.g. Vestas service contracts vs. Ørsted asset operations read differently — match the one actually being applied to).
+
 **CV-tailoring subagent** — `general-purpose` Agent (fresh) with a self-contained prompt containing: the full chosen CV source file, full `profile/voice-notes.md`, the job's `jd_text`/role/company/location, and the constraints above (no fabrication, ATS-parseable, sound like him). Instruction: reorder bullets to surface the most relevant experience first, mirror the JD's own terminology only where it's an honest match. Output: complete tailored CV in Markdown.
 
 **Cover-letter subagent** — second `general-purpose` Agent (fresh) with: `profile/background.md`, full `profile/voice-notes.md`, the job's `jd_text`/role/company, and the constraints above. Instruction: concise, specific cover letter referencing 1-2 concrete things about the company/role, connected to Xavier's actual RBI/Asset Integrity background and CTMC/MPC dissertation (49% OPEX reduction, 6% availability improvement, 15MW spar-type case study) where genuinely relevant. No filler. Output: complete cover letter in Markdown.
