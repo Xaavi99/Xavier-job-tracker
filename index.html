@@ -176,6 +176,12 @@
 </div>
 
 <div class="controls">
+  <button class="filter-pill country-pill active" onclick="setCountry('all',this)">All countries</button>
+  <button class="filter-pill country-pill" onclick="setCountry('norway',this)">Norway</button>
+  <button class="filter-pill country-pill" onclick="setCountry('denmark',this)">Denmark</button>
+</div>
+
+<div class="controls">
   <button class="filter-pill materials-pill active" onclick="setMaterials('all',this)">All materials</button>
   <button class="filter-pill materials-pill" onclick="setMaterials('tracked',this)">ATS tracked</button>
   <button class="filter-pill materials-pill" onclick="setMaterials('untracked',this)">Not built</button>
@@ -304,6 +310,7 @@ let jobs = [];
 let applicationsMap = {};
 let currentFilter = 'all';
 let currentTrack = 'all';
+let currentCountry = 'all';
 let currentMaterials = 'all';
 let debounceTimers = {};
 
@@ -526,11 +533,15 @@ function activatePill(scopeSelector, setter, value, btn) {
 }
 
 function setFilter(f, btn) {
-  activatePill('.filter-pill:not(.track-pill):not(.materials-pill)', v => currentFilter = v, f, btn);
+  activatePill('.filter-pill:not(.track-pill):not(.country-pill):not(.materials-pill)', v => currentFilter = v, f, btn);
 }
 
 function setTrack(t, btn) {
   activatePill('.track-pill', v => currentTrack = v, t, btn);
+}
+
+function setCountry(c, btn) {
+  activatePill('.country-pill', v => currentCountry = v, c, btn);
 }
 
 function setMaterials(m, btn) {
@@ -878,12 +889,13 @@ function render() {
       ? (currentFilter === 'all' || j.tier === currentFilter)
       : j.status === currentFilter;
     const trackMatch = currentTrack === 'all' || (j.track || 'industry') === currentTrack;
+    const countryMatch = currentCountry === 'all' || (j.location || '').toLowerCase().includes(currentCountry);
     const hasMaterials = !!applicationsMap[j.id];
     const materialsMatch = currentMaterials === 'all'
       || (currentMaterials === 'tracked' && hasMaterials)
       || (currentMaterials === 'untracked' && !hasMaterials);
     const searchMatch = !query || (j.role+j.company+j.location+(j.notes||'')).toLowerCase().includes(query);
-    return tierMatch && trackMatch && materialsMatch && searchMatch;
+    return tierMatch && trackMatch && countryMatch && materialsMatch && searchMatch;
   });
 
   const sortMode = document.getElementById('sort-select')?.value || 'default';
