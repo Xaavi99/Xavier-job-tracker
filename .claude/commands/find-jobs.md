@@ -39,7 +39,13 @@ For each remaining new candidate, compare its `jd_text` against the relevant pro
 Do this yourself directly (it's reasoning over text, not search) rather than spawning another subagent, unless the combined candidate list is large enough that batching through a subagent is clearly faster.
 
 ## 5. Insert new rows
-For each new, scored candidate, POST to Supabase with the service role key, setting `track` to the track it came from:
+**The `jobs.id` column has no auto-increment default** — omitting it causes a `null value in column "id"` failure. First fetch the current max id, then assign each new row the next sequential integer yourself:
+```
+curl "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs?select=id&order=id.desc&limit=1" \
+  -H "apikey: <service role key>" -H "Authorization: Bearer <service role key>"
+```
+
+For each new, scored candidate, POST to Supabase with the service role key, setting `id` to the next unused integer and `track` to the track it came from:
 
 ```
 curl -X POST "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs" \
@@ -47,10 +53,10 @@ curl -X POST "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs" \
   -H "Authorization: Bearer <service role key>" \
   -H "Content-Type: application/json" \
   -H "Prefer: return=minimal" \
-  -d '{"role":"...","company":"...","location":"...","tier":"A","status":"Interested","date":"","notes":"...","link":"...","referral":false,"track":"industry","source_url":"...","jd_text":"...","discovered_at":"<ISO timestamp now>"}'
+  -d '{"id":<next int>,"role":"...","company":"...","location":"...","tier":"A","status":"Interested","date":"","notes":"...","link":"...","referral":false,"track":"industry","source_url":"...","jd_text":"...","discovered_at":"<ISO timestamp now>"}'
 ```
 
-Do not set `id` — let the table assign it.
+Batching multiple candidates into a single POST with a JSON array body works too — just give each element in the array its own sequential `id`.
 
 ## 6. Report
 Tell Xavier: how many new roles were added per track, broken down by tier within each, and call out the top 2-3 standout matches overall by name with a one-line reason. Remind him the live tracker will show them next time he opens/refreshes the page (after signing in), filterable by the track pills.
