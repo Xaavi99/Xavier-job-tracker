@@ -605,36 +605,159 @@ function parseInlineBold(text) {
   return parts;
 }
 
-async function buildDocxBlob(markdown) {
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel } = docx;
-  const blocks = parseMarkdownBlocks(markdown);
-  const children = [];
-  for (const b of blocks) {
-    if (b.type === 'blank') continue;
-    if (b.type === 'h1') {
-      children.push(new Paragraph({ text: b.text, heading: HeadingLevel.HEADING_1, spacing: { after: 160 } }));
-      continue;
-    }
-    if (b.type === 'h2') {
-      children.push(new Paragraph({ text: b.text, heading: HeadingLevel.HEADING_2, spacing: { before: 220, after: 100 } }));
-      continue;
-    }
-    const runs = parseInlineBold(b.text).map(p => new TextRun({ text: p.text, bold: p.bold }));
-    if (b.type === 'bullet') {
-      children.push(new Paragraph({ children: runs, bullet: { level: 0 }, spacing: { after: 60 } }));
-    } else {
-      children.push(new Paragraph({ children: runs, spacing: { after: 140 } }));
-    }
+const DOCX_NAVY = '1F3864';
+const DOCX_GRAY = '595959';
+const DOCX_RULE_COLOR = 'BFBFBF';
+
+// CV shape: h1 (name) + a few identity lines (title/contact) before the first
+// ## section, then ## sections of bullets/entries. The identity block is
+// centered and set apart from the body with a rule.
+function buildCvDocxChildren(blocks, docxLib) {
+  const { Paragraph, TextRun, AlignmentType, BorderStyle } = docxLib;
+  const RULE = { style: BorderStyle.SINGLE, size: 4, color: DOCX_RULE_COLOR, space: 2 };
+
+  const firstH2 = blocks.findIndex(b => b.type === 'h2');
+  const headerEnd = firstH2 === -1 ? blocks.length : firstH2;
+  let lastHeaderLineIdx = -1;
+  for (let k = 0; k < headerEnd; k++) {
+    if (blocks[k].type !== 'blank' && blocks[k].type !== 'h1') lastHeaderLineIdx = k;
   }
+
+  const children = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.type === 'blank') continue;
+
+    if (b.type === 'h1') {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: b.text, bold: true, size: 32, color: DOCX_NAVY })],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 60 }
+      }));
+      continue;
+    }
+
+    if (b.type === 'h2') {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: b.text.toUpperCase(), bold: true, size: 22, color: DOCX_NAVY })],
+        border: { bottom: RULE },
+        spacing: { before: 240, after: 100 }
+      }));
+      continue;
+    }
+
+    const isHeaderLine = i < headerEnd;
+    const runs = parseInlineBold(b.text).map(p => new TextRun({
+      text: p.text,
+      bold: p.bold,
+      size: isHeaderLine ? 20 : undefined,
+      color: isHeaderLine ? DOCX_GRAY : undefined
+    }));
+
+    if (b.type === 'bullet') {
+      children.push(new Paragraph({
+        children: runs,
+        bullet: { level: 0 },
+        indent: { left: 360, hanging: 270 },
+        spacing: { after: 40 }
+      }));
+      continue;
+    }
+
+    if (isHeaderLine) {
+      const isLastHeaderLine = i === lastHeaderLineIdx;
+      children.push(new Paragraph({
+        children: runs,
+        alignment: AlignmentType.CENTER,
+        spacing: { after: isLastHeaderLine ? 200 : 40 },
+        border: isLastHeaderLine ? { bottom: RULE } : undefined
+      }));
+      continue;
+    }
+
+    // A body paragraph that opens with a bold lead-in (job title / degree line)
+    // sits tight above its own bullets/description; a plain paragraph gets normal
+    // breathing room before the next block.
+    const isEntry = b.text.startsWith('**');
+    children.push(new Paragraph({
+      children: runs,
+      spacing: isEntry ? { before: 100, after: 20 } : { after: 120 }
+    }));
+  }
+  return children;
+}
+
+// Letter shape: h1 (a title/label, not identity info) + prose paragraphs +
+// a closing salutation ("Yours sincerely," / name) as the final two lines.
+// No ## sections. Body paragraphs get normal letter spacing; the closing
+// pair is held tight together instead of getting a full paragraph gap.
+function buildLetterDocxChildren(blocks, docxLib) {
+  const { Paragraph, TextRun, BorderStyle } = docxLib;
+  const RULE = { style: BorderStyle.SINGLE, size: 4, color: DOCX_RULE_COLOR, space: 2 };
+
+  const nonBlankIdx = [];
+  blocks.forEach((b, i) => { if (b.type !== 'blank') nonBlankIdx.push(i); });
+  const closingLines = new Set(nonBlankIdx.slice(-2));
+
+  const children = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.type === 'blank') continue;
+
+    if (b.type === 'h1') {
+      children.push(new Paragraph({
+        children: [new TextRun({ text: b.text, bold: true, size: 26, color: DOCX_NAVY })],
+        border: { bottom: RULE },
+        spacing: { after: 200 }
+      }));
+      continue;
+    }
+
+    const runs = parseInlineBold(b.text).map(p => new TextRun({ text: p.text, bold: p.bold }));
+
+    if (b.type === 'bullet') {
+      children.push(new Paragraph({
+        children: runs,
+        bullet: { level: 0 },
+        indent: { left: 360, hanging: 270 },
+        spacing: { after: 60 }
+      }));
+      continue;
+    }
+
+    if (b.type === 'h2') {
+      children.push(new Paragraph({ children: [new TextRun({ text: b.text, bold: true, size: 22 })], spacing: { before: 160, after: 80 } }));
+      continue;
+    }
+
+    children.push(new Paragraph({
+      children: runs,
+      spacing: closingLines.has(i) ? { after: 20 } : { after: 180 }
+    }));
+  }
+  return children;
+}
+
+async function buildDocxBlob(markdown, kind = 'cv') {
+  const docxLib = docx;
+  const { Document, Packer } = docxLib;
+  const blocks = parseMarkdownBlocks(markdown);
+  const children = kind === 'letter'
+    ? buildLetterDocxChildren(blocks, docxLib)
+    : buildCvDocxChildren(blocks, docxLib);
+
   const doc = new Document({
-    sections: [{ properties: {}, children }],
-    styles: { default: { document: { run: { font: 'Calibri', size: 22 } } } }
+    sections: [{
+      properties: { page: { margin: { top: 720, bottom: 720, left: 900, right: 900 } } },
+      children
+    }],
+    styles: { default: { document: { run: { font: 'Calibri', size: 21 } } } }
   });
   return await Packer.toBlob(doc);
 }
 
-async function downloadDocx(filename, markdown) {
-  const blob = await buildDocxBlob(markdown);
+async function downloadDocx(filename, markdown, kind = 'cv') {
+  const blob = await buildDocxBlob(markdown, kind);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename; a.click();
@@ -715,7 +838,7 @@ function downloadCurrentTab(format) {
     downloadPdf(slug + '-' + label + '.pdf', text);
     showToast('Downloaded PDF');
   } else {
-    downloadDocx(slug + '-' + label + '.docx', text)
+    downloadDocx(slug + '-' + label + '.docx', text, tab === 'cv' ? 'cv' : 'letter')
       .then(() => showToast('Downloaded Word document'))
       .catch(() => showToast('Download failed — try the PDF option', true));
   }
