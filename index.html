@@ -101,6 +101,15 @@
   .login-card input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);padding:8px 10px;font-family:var(--font-body);font-size:13px;outline:none}
   .login-card input:focus{border-color:var(--accent)}
   .login-error{font-size:11px;color:var(--red);font-family:var(--font-mono);min-height:14px}
+  .profile-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200}
+  .profile-screen-inner{display:flex;flex-direction:column;align-items:center;gap:2rem}
+  .profile-screen-inner h2{font-size:20px;font-weight:500;color:var(--text)}
+  .profile-grid{display:flex;gap:1.5rem;flex-wrap:wrap;justify-content:center}
+  .profile-card{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px;color:var(--muted);font-family:inherit}
+  .profile-avatar{width:88px;height:88px;border-radius:var(--radius-lg);background:var(--surface2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:600;color:var(--accent);transition:border-color 0.15s,transform 0.15s}
+  .profile-card:hover .profile-avatar{border-color:var(--accent);transform:scale(1.04)}
+  .profile-card span{font-size:13px}
+  .profile-card:hover span{color:var(--text)}
   .hidden{display:none !important}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:300;padding:2rem}
   .modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
@@ -135,6 +144,22 @@
   </form>
 </div>
 
+<div class="profile-screen hidden" id="profile-screen">
+  <div class="profile-screen-inner">
+    <h2>Who's using this?</h2>
+    <div class="profile-grid">
+      <button class="profile-card" onclick="chooseProfile('xavier')">
+        <div class="profile-avatar">X</div>
+        <span>Xavier</span>
+      </button>
+      <button class="profile-card" onclick="chooseProfile('shamna')">
+        <div class="profile-avatar">S</div>
+        <span>Shamna</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="app" class="hidden">
 
 <header>
@@ -155,6 +180,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add role
     </button>
+    <button class="btn" onclick="showProfileScreen()">Switch profile</button>
     <button class="btn" onclick="signOut()">Sign out</button>
   </div>
 </header>
@@ -166,11 +192,6 @@
   <div class="stat"><div class="stat-label">Offers</div><div class="stat-num" id="st-offer">—</div></div>
   <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">—</div></div>
   <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">—</div></div>
-</div>
-
-<div class="controls">
-  <button class="filter-pill profile-pill active" data-profile="xavier" onclick="setProfile('xavier',this)">Xavier</button>
-  <button class="filter-pill profile-pill" data-profile="shamna" onclick="setProfile('shamna',this)">Shamna</button>
 </div>
 
 <div class="controls">
@@ -376,6 +397,7 @@ function showLogin() {
 }
 function showApp() {
   document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('profile-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
 }
 
@@ -393,8 +415,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   try {
     const data = await authRequest('password', { email, password });
     setSession({ access_token: data.access_token, refresh_token: data.refresh_token, expires_at: Date.now() + (data.expires_in * 1000) });
-    showApp();
-    loadJobs();
+    showProfileScreen();
   } catch(err) {
     errEl.textContent = 'Sign in failed — check your email and password';
   }
@@ -546,14 +567,17 @@ function setTrack(t, btn) {
   activatePill('.track-pill', v => currentTrack = v, t, btn);
 }
 
-function setProfile(p, btn) {
-  activatePill('.profile-pill', v => { currentProfile = v; localStorage.setItem('xjt_profile', v); }, p, btn);
+function showProfileScreen() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('profile-screen').classList.remove('hidden');
 }
 
-function syncProfilePillUI() {
-  document.querySelectorAll('.profile-pill').forEach(b => {
-    b.classList.toggle('active', b.dataset.profile === currentProfile);
-  });
+function chooseProfile(p) {
+  currentProfile = p;
+  localStorage.setItem('xjt_profile', p);
+  showApp();
+  if (jobs.length === 0) loadJobs(); else render();
 }
 
 function setCountry(c, btn) {
@@ -970,9 +994,8 @@ function showToast(msg, isError = false) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (async function init() {
-  syncProfilePillUI();
   const ok = await trySession();
-  if (ok) { showApp(); loadJobs(); }
+  if (ok) { showProfileScreen(); }
   else { showLogin(); }
 })();
 </script>
