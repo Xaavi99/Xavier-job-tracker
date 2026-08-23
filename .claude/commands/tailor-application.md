@@ -48,7 +48,14 @@ Run both subagents (CV + cover letter/personal statement) in parallel — single
 ## 3. ATS scoring
 Once the tailored CV text is back, launch a third `general-purpose` Agent (fresh) with: the tailored CV text, the job's `jd_text`. Instruction: act as an ATS keyword/structure matcher. Score 0-100 based on (a) how many of the JD's explicit required skills/qualifications appear verbatim or near-verbatim in the CV, (b) standard section structure and parseable formatting, (c) no missing critical hard requirements (e.g. a specific certification or years-of-experience the JD treats as mandatory). Return a JSON object: `{"score": <int>, "notes": "<2-3 sentences: what matched well, what's missing or weak, one concrete fix if score < 80>"}`. This is separate from a "how good is this candidate" judgment — it's specifically about ATS-style keyword/structure match.
 
-## 4. Save output
+## 4. Optimize if score is low
+If `score` < 80, run one revision pass before saving anything — don't just pass the low score through to the report.
+
+**CV-revision subagent** — `general-purpose` Agent (fresh) with: the tailored CV text, the job's `jd_text`, the ATS `notes` from step 3, the original chosen CV source file (`cv.md`/`cv-grad.md`/`cv-phd.md`), and the constraints from the top of this file (no fabrication, ATS-parseable, sound like them, Profile section length limit). Instruction: address each gap named in `notes` **only by surfacing real, already-true content from the source CV/`background.md` that step 2 left out or under-emphasized** — pull in a genuinely matching skill/tool/metric that exists but didn't make it into the tailored draft, mirror more of the JD's exact phrasing where it's an honest match, fix structural issues (section headers, formatting) the notes called out. Never invent anything to close a gap that's real (no matching experience exists) — if a required item genuinely isn't in the profile, leave it as a gap. Output: complete revised CV in Markdown.
+
+Then re-run the same ATS-scoring subagent from step 3 on the revised CV to get an updated `{"score", "notes"}`. Run this optimize-and-rescore cycle **at most once** — take whatever the second score is (even if still < 80, since further gaps at that point are likely genuine and not fabricable) and use the revised CV as the final output going forward.
+
+## 5. Save output
 
 **Local files** (for easy copy/paste or PDF conversion): write to `applications/$PROFILE/<company-slug>-<role-slug>/cv.md` and `.../cover-letter.md` (or `.../personal-statement.md` for `phd`). Create the directory if needed.
 
@@ -69,5 +76,5 @@ curl -X PATCH "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs?id=eq.<id>"
   -d '{"cv_path":"applications/$PROFILE/<slug>/cv.md","cover_letter_path":"applications/$PROFILE/<slug>/cover-letter.md"}'
 ```
 
-## 5. Report
-Report to the user: the ATS score, a one-line reason for it, where the local files landed, and a 2-3 sentence summary of the angle each document took. Remind them these are drafts for review — nothing gets submitted automatically. If the ATS score is below ~70, flag the specific gap from `ats_notes` so they know what to look at before applying.
+## 6. Report
+Report to the user: the ATS score (and, if step 4 ran, the before/after score so the improvement is visible), a one-line reason for it, where the local files landed, and a 2-3 sentence summary of the angle each document took. Remind them these are drafts for review — nothing gets submitted automatically. If the final ATS score is still below ~70, flag the specific gap from `ats_notes` so they know what to look at before applying — at this point it's a genuine gap in the profile, not something the tailoring pass could fix without fabricating.
