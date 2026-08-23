@@ -294,6 +294,10 @@
         <label for="add-role-link" style="font-size:11px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block">Job link</label>
         <input type="url" id="add-role-link" placeholder="https://…" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);padding:8px 10px;font-family:var(--font-body);font-size:13px;outline:none" required>
       </div>
+      <div>
+        <label for="add-role-jd" style="font-size:11px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block">Job description (optional)</label>
+        <textarea id="add-role-jd" placeholder="Paste the job description here if you have it — skips having to fetch/parse the link later" rows="5" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);padding:8px 10px;font-family:var(--font-body);font-size:13px;outline:none;resize:vertical"></textarea>
+      </div>
     </form>
     <div class="modal-actions">
       <button class="btn btn-accent" onclick="submitAddRole()">Add role</button>
@@ -573,9 +577,9 @@ async function deleteRow(id) {
   await deleteJob(id);
 }
 
-async function addRow(link) {
+async function addRow(link, jdText) {
   const newId = Math.max(...jobs.map(j => j.id), 0) + 1;
-  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: link || '', referral: false, track: 'industry', profile: currentProfile };
+  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: link || '', referral: false, track: 'industry', profile: currentProfile, jd_text: jdText || null };
   jobs.push(job);
   render();
   await insertJob(job);
@@ -583,6 +587,7 @@ async function addRow(link) {
 
 function openAddRoleModal() {
   document.getElementById('add-role-link').value = '';
+  document.getElementById('add-role-jd').value = '';
   document.getElementById('add-role-modal').classList.remove('hidden');
   document.getElementById('add-role-link').focus();
 }
@@ -594,9 +599,10 @@ function closeAddRoleModal() {
 function submitAddRole() {
   const input = document.getElementById('add-role-link');
   const link = input.value.trim();
+  const jdText = document.getElementById('add-role-jd').value.trim();
   if (!link) { input.focus(); return; }
   closeAddRoleModal();
-  addRow(link);
+  addRow(link, jdText);
 }
 
 function activatePill(scopeSelector, setter, value, btn) {
