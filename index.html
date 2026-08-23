@@ -164,7 +164,7 @@
 
 <header>
   <div class="brand">
-    <span class="brand-title">Xavier Sojan · Asset Integrity</span>
+    <span class="brand-title" id="brand-title">Xavier Sojan · Asset Integrity</span>
     <h1>Job <span>tracker</span></h1>
   </div>
   <div class="header-actions">
@@ -335,6 +335,16 @@ const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let applicationsMap = {};
 let currentProfile = localStorage.getItem('xjt_profile') || 'xavier';
+const PROFILE_LABELS = {
+  xavier: { title: 'Xavier Sojan · Asset Integrity', tab: 'Xavier — Job Tracker' },
+  shamna: { title: 'Shamna', tab: 'Shamna — Job Tracker' }
+};
+
+function applyProfileBranding(p) {
+  const label = PROFILE_LABELS[p] || { title: p, tab: p + ' — Job Tracker' };
+  document.getElementById('brand-title').textContent = label.title;
+  document.title = label.tab;
+}
 let currentFilter = 'all';
 let currentTrack = 'all';
 let currentCountry = 'all';
@@ -576,6 +586,7 @@ function showProfileScreen() {
 function chooseProfile(p) {
   currentProfile = p;
   localStorage.setItem('xjt_profile', p);
+  applyProfileBranding(p);
   showApp();
   if (jobs.length === 0) loadJobs(); else render();
 }
