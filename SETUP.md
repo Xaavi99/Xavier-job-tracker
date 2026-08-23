@@ -111,6 +111,20 @@ grant select, insert, update, delete on public.applications to anon, authenticat
 grant usage, select on all sequences in schema public to anon, authenticated, service_role;
 ```
 
+## 4b. Multiple profiles (separate job trackers per person)
+
+Still in SQL Editor — adds a `profile` column so more than one person's tracked jobs/applications can share this one Supabase project without mixing lists. `not null default 'xavier'` backfills every existing row to `xavier` automatically, so nothing currently tracked moves or disappears; a new profile's list starts genuinely empty until rows get inserted tagged with its name.
+
+```sql
+alter table jobs
+  add column if not exists profile text not null default 'xavier';
+
+alter table applications
+  add column if not exists profile text not null default 'xavier';
+```
+
+`/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a profile pill row (Xavier / Shamna) that filters the tracker view client-side — add a new `<button class="filter-pill profile-pill" data-profile="...">` there (and wire up `setProfile`) for any profile beyond these two.
+
 ## 5. Service role key for local agent commands
 
 Settings → API → copy the **service_role** key (not anon). Paste it into `.env.local` in this repo (already gitignored — never commit it):

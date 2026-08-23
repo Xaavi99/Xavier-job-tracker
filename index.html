@@ -169,6 +169,11 @@
 </div>
 
 <div class="controls">
+  <button class="filter-pill profile-pill active" data-profile="xavier" onclick="setProfile('xavier',this)">Xavier</button>
+  <button class="filter-pill profile-pill" data-profile="shamna" onclick="setProfile('shamna',this)">Shamna</button>
+</div>
+
+<div class="controls">
   <button class="filter-pill track-pill active" onclick="setTrack('all',this)">All tracks</button>
   <button class="filter-pill track-pill" onclick="setTrack('industry',this)">Industry</button>
   <button class="filter-pill track-pill" onclick="setTrack('europe',this)">Europe</button>
@@ -308,6 +313,7 @@ const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejecte
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let applicationsMap = {};
+let currentProfile = localStorage.getItem('xjt_profile') || 'xavier';
 let currentFilter = 'all';
 let currentTrack = 'all';
 let currentCountry = 'all';
@@ -519,7 +525,7 @@ async function deleteRow(id) {
 
 async function addRow() {
   const newId = Math.max(...jobs.map(j => j.id), 0) + 1;
-  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false, track: 'industry' };
+  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false, track: 'industry', profile: currentProfile };
   jobs.push(job);
   render();
   await insertJob(job);
@@ -538,6 +544,16 @@ function setFilter(f, btn) {
 
 function setTrack(t, btn) {
   activatePill('.track-pill', v => currentTrack = v, t, btn);
+}
+
+function setProfile(p, btn) {
+  activatePill('.profile-pill', v => { currentProfile = v; localStorage.setItem('xjt_profile', v); }, p, btn);
+}
+
+function syncProfilePillUI() {
+  document.querySelectorAll('.profile-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.profile === currentProfile);
+  });
 }
 
 function setCountry(c, btn) {
@@ -884,7 +900,8 @@ function esc(s) {
 
 function render() {
   const query = document.getElementById('search').value.toLowerCase();
-  const filtered = jobs.filter(j => {
+  const profileJobs = jobs.filter(j => (j.profile || 'xavier') === currentProfile);
+  const filtered = profileJobs.filter(j => {
     const tierMatch = ['all','A','B','C'].includes(currentFilter)
       ? (currentFilter === 'all' || j.tier === currentFilter)
       : j.status === currentFilter;
@@ -936,12 +953,12 @@ function render() {
         </button></td>
       </tr>`).join('');
 
-  document.getElementById('st-total').textContent    = jobs.length;
-  document.getElementById('st-applied').textContent  = jobs.filter(j => j.status === 'Applied').length;
-  document.getElementById('st-interview').textContent= jobs.filter(j => j.status === 'Interview').length;
-  document.getElementById('st-offer').textContent    = jobs.filter(j => j.status === 'Offer').length;
-  document.getElementById('st-tierA').textContent    = jobs.filter(j => j.tier === 'A').length;
-  document.getElementById('st-tierB').textContent    = jobs.filter(j => j.tier === 'B').length;
+  document.getElementById('st-total').textContent    = profileJobs.length;
+  document.getElementById('st-applied').textContent  = profileJobs.filter(j => j.status === 'Applied').length;
+  document.getElementById('st-interview').textContent= profileJobs.filter(j => j.status === 'Interview').length;
+  document.getElementById('st-offer').textContent    = profileJobs.filter(j => j.status === 'Offer').length;
+  document.getElementById('st-tierA').textContent    = profileJobs.filter(j => j.tier === 'A').length;
+  document.getElementById('st-tierB').textContent    = profileJobs.filter(j => j.tier === 'B').length;
 }
 
 function showToast(msg, isError = false) {
@@ -953,6 +970,7 @@ function showToast(msg, isError = false) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (async function init() {
+  syncProfilePillUI();
   const ok = await trySession();
   if (ok) { showApp(); loadJobs(); }
   else { showLogin(); }
