@@ -176,7 +176,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export CSV
     </button>
-    <button class="btn btn-accent" onclick="addRow()">
+    <button class="btn btn-accent" onclick="openAddRoleModal()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add role
     </button>
@@ -279,6 +279,25 @@
         Download .pdf
       </button>
       <button class="btn" onclick="copyCurrentTab()">Copy text</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="add-role-modal" onclick="if(event.target===this)closeAddRoleModal()">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-header">
+      <h2>Add role</h2>
+      <button class="modal-close" onclick="closeAddRoleModal()">&times;</button>
+    </div>
+    <form id="add-role-form" style="padding:1.25rem;display:flex;flex-direction:column;gap:14px" onsubmit="submitAddRole();return false">
+      <div>
+        <label for="add-role-link" style="font-size:11px;color:var(--muted);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;display:block">Job link</label>
+        <input type="url" id="add-role-link" placeholder="https://…" style="width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);padding:8px 10px;font-family:var(--font-body);font-size:13px;outline:none" required>
+      </div>
+    </form>
+    <div class="modal-actions">
+      <button class="btn btn-accent" onclick="submitAddRole()">Add role</button>
+      <button class="btn" onclick="closeAddRoleModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -554,12 +573,30 @@ async function deleteRow(id) {
   await deleteJob(id);
 }
 
-async function addRow() {
+async function addRow(link) {
   const newId = Math.max(...jobs.map(j => j.id), 0) + 1;
-  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: '', referral: false, track: 'industry', profile: currentProfile };
+  const job = { id: newId, role: 'New role', company: 'Company', location: '', tier: 'B', status: 'Interested', date: '', notes: '', link: link || '', referral: false, track: 'industry', profile: currentProfile };
   jobs.push(job);
   render();
   await insertJob(job);
+}
+
+function openAddRoleModal() {
+  document.getElementById('add-role-link').value = '';
+  document.getElementById('add-role-modal').classList.remove('hidden');
+  document.getElementById('add-role-link').focus();
+}
+
+function closeAddRoleModal() {
+  document.getElementById('add-role-modal').classList.add('hidden');
+}
+
+function submitAddRole() {
+  const input = document.getElementById('add-role-link');
+  const link = input.value.trim();
+  if (!link) { input.focus(); return; }
+  closeAddRoleModal();
+  addRow(link);
 }
 
 function activatePill(scopeSelector, setter, value, btn) {
@@ -623,6 +660,7 @@ function closeMaterials() {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modalState) closeMaterials();
+  if (e.key === 'Escape' && !document.getElementById('add-role-modal').classList.contains('hidden')) closeAddRoleModal();
 });
 
 function showMaterialsTab(tab) {
