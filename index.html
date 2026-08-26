@@ -53,8 +53,9 @@
   .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;overflow-x:auto}
   table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}
   thead th{text-align:left;padding:12px 14px;font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid var(--border)}
-  col.c-role{width:20%}col.c-loc{width:12%}col.c-tier{width:7%}
-  col.c-status{width:12%}col.c-date{width:12%}col.c-notes{width:20%}
+  col.c-role{width:20%}col.c-loc{width:9%}col.c-tier{width:7%}
+  col.c-deadline{width:9%}
+  col.c-status{width:12%}col.c-date{width:12%}col.c-notes{width:14%}
   col.c-materials{width:8%}col.c-link{width:5%}col.c-del{width:4%}
   tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
   tbody tr:last-child{border-bottom:none}
@@ -229,6 +230,7 @@
       <option value="date-desc">Sort: Date applied (latest)</option>
       <option value="ats-desc">Sort: ATS score (highest)</option>
       <option value="ats-asc">Sort: ATS score (lowest)</option>
+      <option value="deadline-asc">Sort: Deadline (soonest)</option>
     </select>
     <div class="search-input-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -240,12 +242,12 @@
 <div class="table-wrap">
   <table>
     <colgroup>
-      <col class="c-role"><col class="c-loc"><col class="c-tier">
+      <col class="c-role"><col class="c-loc"><col class="c-tier"><col class="c-deadline">
       <col class="c-status"><col class="c-date"><col class="c-notes"><col class="c-materials"><col class="c-link"><col class="c-del">
     </colgroup>
     <thead>
       <tr>
-        <th>Role / Company</th><th>Location</th><th>Tier</th>
+        <th>Role / Company</th><th>Location</th><th>Tier</th><th>Deadline</th>
         <th>Status</th><th>Date applied</th><th>Notes</th><th>Materials</th><th>Link</th><th></th>
       </tr>
     </thead>
@@ -977,6 +979,15 @@ function esc(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function deadlineColor(dateStr) {
+  if (!dateStr) return 'var(--muted)';
+  const days = (new Date(dateStr) - new Date(new Date().toDateString())) / 86400000;
+  if (days < 0) return 'var(--muted)';
+  if (days <= 7) return 'var(--red)';
+  if (days <= 21) return 'var(--amber)';
+  return 'var(--text)';
+}
+
 function render() {
   const query = document.getElementById('search').value.toLowerCase();
   const profileJobs = jobs.filter(j => (j.profile || 'xavier') === currentProfile);
@@ -1008,6 +1019,15 @@ function render() {
       return (av - bv) * dir;
     });
   }
+  else if (sortMode === 'deadline-asc') {
+    filtered.sort((a, b) => {
+      const av = a.deadline || '', bv = b.deadline || '';
+      if (!av && !bv) return 0;
+      if (!av) return 1;
+      if (!bv) return -1;
+      return av.localeCompare(bv);
+    });
+  }
 
   const tb = document.getElementById('tbody');
   tb.innerHTML = filtered.length === 0
@@ -1020,6 +1040,7 @@ function render() {
         </td>
         <td style="color:var(--muted);font-size:12px">${esc(j.location)}</td>
         <td><span class="tier-badge tier-${j.tier}">${j.tier}</span></td>
+        <td><input type="date" class="inline-input" style="color:${deadlineColor(j.deadline)}" value="${esc(j.deadline||'')}" onchange="updateFieldLocal(${j.id},'deadline',this.value)"></td>
         <td><span class="status-pill s-${j.status}" onclick="cycleStatus(${j.id})" title="Click to cycle">${j.status}</span></td>
         <td><input type="date" class="inline-input" value="${esc(j.date||'')}" onchange="updateFieldLocal(${j.id},'date',this.value)"></td>
         <td><input type="text" class="inline-input" value="${esc(j.notes||'')}" placeholder="Add notes…" oninput="updateFieldLocal(${j.id},'notes',this.value)"></td>

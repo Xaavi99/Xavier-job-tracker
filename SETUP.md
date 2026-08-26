@@ -125,6 +125,17 @@ alter table applications
 
 `/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a profile pill row (Xavier / Shamna) that filters the tracker view client-side — add a new `<button class="filter-pill profile-pill" data-profile="...">` there (and wire up `setProfile`) for any profile beyond these two.
 
+## 4c. Deadline sorting
+
+Still in SQL Editor — adds a `deadline` column so roles with a real application deadline can be sorted soonest-first in the tracker ("Sort: Deadline (soonest)" in `index.html`), with red/amber highlighting inside 7/21 days. Nullable — most listings don't state a hard deadline, and rows without one just sort to the bottom.
+
+```sql
+alter table jobs
+  add column if not exists deadline date;
+```
+
+No RLS/grant changes needed — it's covered by the existing `jobs` policies and grants.
+
 ## 5. Service role key for local agent commands
 
 Settings → API → copy the **service_role** key (not anon). Paste it into `.env.local` in this repo (already gitignored — never commit it):
