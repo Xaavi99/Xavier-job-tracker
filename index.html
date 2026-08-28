@@ -157,6 +157,10 @@
         <div class="profile-avatar">S</div>
         <span>Shamna</span>
       </button>
+      <button class="profile-card" onclick="chooseProfile('phd')">
+        <div class="profile-avatar" style="font-size:18px">PhD</div>
+        <span>PhD Scholarships</span>
+      </button>
     </div>
   </div>
 </div>
@@ -362,7 +366,8 @@ let applicationsMap = {};
 let currentProfile = localStorage.getItem('xjt_profile') || 'xavier';
 const PROFILE_LABELS = {
   xavier: { title: 'Xavier Sojan · Asset Integrity', tab: 'Xavier — Job Tracker' },
-  shamna: { title: 'Shamna', tab: 'Shamna — Job Tracker' }
+  shamna: { title: 'Shamna', tab: 'Shamna — Job Tracker' },
+  phd: { title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker' }
 };
 
 function applyProfileBranding(p) {
