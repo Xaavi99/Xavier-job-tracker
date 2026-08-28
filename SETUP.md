@@ -117,13 +117,13 @@ Still in SQL Editor — adds a `profile` column so more than one person's tracke
 
 ```sql
 alter table jobs
-  add column if not exists profile text not null default 'xavier';
+  add column if not exists profile text not null default 'uk';
 
 alter table applications
-  add column if not exists profile text not null default 'xavier';
+  add column if not exists profile text not null default 'uk';
 ```
 
-`/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a "Who's using this?" profile picker (`profile-card` buttons calling `chooseProfile(name)`) that switches the active tracker view client-side — add a new `<button class="profile-card" onclick="chooseProfile('...')">` there (and a `PROFILE_META` entry) for any profile beyond `uk`/`shamna`/`phd`/`europe`/`graduate-roles`.
+`/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a "Who's using this?" profile picker driven by a single `PROFILES` array (id/avatar/label/title/tab/tracks) that renders the picker buttons and branding — add a new entry there for any profile beyond `uk`/`shamna`/`phd`/`europe`/`graduate-roles`/`daniel-may`.
 
 ## 4c. Deadline sorting
 

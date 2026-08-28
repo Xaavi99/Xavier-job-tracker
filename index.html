@@ -148,32 +148,7 @@
 <div class="profile-screen hidden" id="profile-screen">
   <div class="profile-screen-inner">
     <h2>Who's using this?</h2>
-    <div class="profile-grid">
-      <button class="profile-card" onclick="chooseProfile('uk')">
-        <div class="profile-avatar" style="font-size:24px">UK</div>
-        <span>Xavier — UK</span>
-      </button>
-      <button class="profile-card" onclick="chooseProfile('europe')">
-        <div class="profile-avatar" style="font-size:18px">EU</div>
-        <span>Xavier — Europe</span>
-      </button>
-      <button class="profile-card" onclick="chooseProfile('graduate-roles')">
-        <div class="profile-avatar" style="font-size:16px">Grad</div>
-        <span>Xavier — Graduate Roles</span>
-      </button>
-      <button class="profile-card" onclick="chooseProfile('shamna')">
-        <div class="profile-avatar">S</div>
-        <span>Shamna</span>
-      </button>
-      <button class="profile-card" onclick="chooseProfile('phd')">
-        <div class="profile-avatar" style="font-size:18px">PhD</div>
-        <span>PhD Scholarships</span>
-      </button>
-      <button class="profile-card" onclick="chooseProfile('daniel-may')">
-        <div class="profile-avatar" style="font-size:16px">DM</div>
-        <span>Daniel May Picks</span>
-      </button>
-    </div>
+    <div class="profile-grid" id="profile-grid"></div>
   </div>
 </div>
 
@@ -376,19 +351,29 @@ const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let applicationsMap = {};
 let currentProfile = localStorage.getItem('xjt_profile') || 'uk';
-const PROFILE_LABELS = {
-  uk: { title: 'Xavier Sojan · UK', tab: 'UK — Job Tracker' },
-  europe: { title: 'Xavier Sojan · Europe', tab: 'Europe — Job Tracker' },
-  'graduate-roles': { title: 'Xavier Sojan · Graduate Roles', tab: 'Graduate Roles — Job Tracker' },
-  shamna: { title: 'Shamna', tab: 'Shamna — Job Tracker' },
-  phd: { title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker' },
-  'daniel-may': { title: 'Xavier Sojan · Daniel May Picks', tab: 'Daniel May Picks — Job Tracker' }
-};
+// Single source of truth for the profile picker, branding, and which tracks each profile can have jobs in
+// (the track-pill row itself doesn't filter per-profile yet — `tracks` is here so that's a config change, not a rediscovery, when it does).
+const PROFILES = [
+  { id: 'uk',             avatar: 'UK',   avatarSize: 24, label: 'Xavier — UK',            title: 'Xavier Sojan · UK',                 tab: 'UK — Job Tracker',            tracks: ['industry', 'phd'] },
+  { id: 'europe',         avatar: 'EU',   avatarSize: 18, label: 'Xavier — Europe',         title: 'Xavier Sojan · Europe',             tab: 'Europe — Job Tracker',         tracks: ['europe'] },
+  { id: 'graduate-roles', avatar: 'Grad', avatarSize: 16, label: 'Xavier — Graduate Roles',  title: 'Xavier Sojan · Graduate Roles',      tab: 'Graduate Roles — Job Tracker',  tracks: ['industry'] },
+  { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna',                             tab: 'Shamna — Job Tracker',          tracks: ['industry'] },
+  { id: 'phd',            avatar: 'PhD',  avatarSize: 18, label: 'PhD Scholarships',         title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker', tracks: ['phd'] },
+  { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] }
+];
+
+function renderProfileGrid() {
+  document.getElementById('profile-grid').innerHTML = PROFILES.map(p => `
+      <button class="profile-card" onclick="chooseProfile('${p.id}')">
+        <div class="profile-avatar"${p.avatarSize ? ` style="font-size:${p.avatarSize}px"` : ''}>${esc(p.avatar)}</div>
+        <span>${esc(p.label)}</span>
+      </button>`).join('');
+}
 
 function applyProfileBranding(p) {
-  const label = PROFILE_LABELS[p] || { title: p, tab: p + ' — Job Tracker' };
-  document.getElementById('brand-title').textContent = label.title;
-  document.title = label.tab;
+  const found = PROFILES.find(x => x.id === p) || { title: p, tab: p + ' — Job Tracker' };
+  document.getElementById('brand-title').textContent = found.title;
+  document.title = found.tab;
 }
 let currentFilter = 'all';
 let currentTrack = 'all';
@@ -1090,6 +1075,7 @@ function showToast(msg, isError = false) {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (async function init() {
+  renderProfileGrid();
   const ok = await trySession();
   if (ok) { showProfileScreen(); }
   else { showLogin(); }
