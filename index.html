@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xavier — Job Tracker</title>
+<title>UK — Job Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -149,9 +149,17 @@
   <div class="profile-screen-inner">
     <h2>Who's using this?</h2>
     <div class="profile-grid">
-      <button class="profile-card" onclick="chooseProfile('xavier')">
-        <div class="profile-avatar">X</div>
-        <span>Xavier</span>
+      <button class="profile-card" onclick="chooseProfile('uk')">
+        <div class="profile-avatar" style="font-size:24px">UK</div>
+        <span>Xavier — UK</span>
+      </button>
+      <button class="profile-card" onclick="chooseProfile('europe')">
+        <div class="profile-avatar" style="font-size:18px">EU</div>
+        <span>Xavier — Europe</span>
+      </button>
+      <button class="profile-card" onclick="chooseProfile('graduate-roles')">
+        <div class="profile-avatar" style="font-size:16px">Grad</div>
+        <span>Xavier — Graduate Roles</span>
       </button>
       <button class="profile-card" onclick="chooseProfile('shamna')">
         <div class="profile-avatar">S</div>
@@ -161,6 +169,10 @@
         <div class="profile-avatar" style="font-size:18px">PhD</div>
         <span>PhD Scholarships</span>
       </button>
+      <button class="profile-card" onclick="chooseProfile('daniel-may')">
+        <div class="profile-avatar" style="font-size:16px">DM</div>
+        <span>Daniel May Picks</span>
+      </button>
     </div>
   </div>
 </div>
@@ -169,7 +181,7 @@
 
 <header>
   <div class="brand">
-    <span class="brand-title" id="brand-title">Xavier Sojan · Asset Integrity</span>
+    <span class="brand-title" id="brand-title">Xavier Sojan · UK</span>
     <h1>Job <span>tracker</span></h1>
   </div>
   <div class="header-actions">
@@ -363,11 +375,14 @@ const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejecte
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let applicationsMap = {};
-let currentProfile = localStorage.getItem('xjt_profile') || 'xavier';
+let currentProfile = localStorage.getItem('xjt_profile') || 'uk';
 const PROFILE_LABELS = {
-  xavier: { title: 'Xavier Sojan · Asset Integrity', tab: 'Xavier — Job Tracker' },
+  uk: { title: 'Xavier Sojan · UK', tab: 'UK — Job Tracker' },
+  europe: { title: 'Xavier Sojan · Europe', tab: 'Europe — Job Tracker' },
+  'graduate-roles': { title: 'Xavier Sojan · Graduate Roles', tab: 'Graduate Roles — Job Tracker' },
   shamna: { title: 'Shamna', tab: 'Shamna — Job Tracker' },
-  phd: { title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker' }
+  phd: { title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker' },
+  'daniel-may': { title: 'Xavier Sojan · Daniel May Picks', tab: 'Daniel May Picks — Job Tracker' }
 };
 
 function applyProfileBranding(p) {
@@ -974,7 +989,7 @@ function exportCSV() {
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'xavier-job-tracker.csv';
+  a.download = currentProfile + '-job-tracker.csv';
   a.click();
   showToast('CSV exported');
 }
@@ -995,7 +1010,7 @@ function deadlineColor(dateStr) {
 
 function render() {
   const query = document.getElementById('search').value.toLowerCase();
-  const profileJobs = jobs.filter(j => (j.profile || 'xavier') === currentProfile);
+  const profileJobs = jobs.filter(j => (j.profile || 'uk') === currentProfile);
   const filtered = profileJobs.filter(j => {
     const tierMatch = ['all','A','B','C'].includes(currentFilter)
       ? (currentFilter === 'all' || j.tier === currentFilter)

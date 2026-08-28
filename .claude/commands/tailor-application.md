@@ -13,7 +13,7 @@ Generate tailored application materials for one job from the active profile's tr
 - **Profile section stays short.** 3-4 sentences, roughly 50-70 words — a recruiter skims a CV in seconds, and a dense paragraph doesn't get read. Every sentence must carry a real fact, skill, or JD keyword. Cut connective/narrative scene-setting ("that work covered...", "that foundation already includes..."), not the substance — if a JD term (e.g. a specific tool or technique the JD asks for that the profile is honestly bridging from adjacent experience) appears nowhere else in the CV, keep it in the trimmed Profile rather than cutting it for length; check before finalizing that no JD keyword present in the untrimmed draft has been dropped from the CV entirely. Lead with the strongest direct match to the JD, not chronological scene-setting.
 
 ## 0. Load context
-- Read `.active-profile` to get `$PROFILE` (if the file is missing, `$PROFILE` is `xavier`). Every `profile/...` path below means `profile/$PROFILE/...`. If `profile/$PROFILE/` doesn't exist, stop and tell the user to run `/switch-profile` to pick a valid one.
+- Read `.active-profile` to get `$PROFILE` (if the file is missing, `$PROFILE` is `uk`). Every `profile/...` path below means `profile/$PROFILE/...`. If `profile/$PROFILE/` doesn't exist, stop and tell the user to run `/switch-profile` to pick a valid one.
 - Read `profile/$PROFILE/background.md` and `profile/$PROFILE/voice-notes.md` (needed for every track).
 - Read `.env.local` for `SUPABASE_SERVICE_ROLE_KEY`. If empty, stop and point to `SETUP.md` step 5.
 

@@ -113,7 +113,7 @@ grant usage, select on all sequences in schema public to anon, authenticated, se
 
 ## 4b. Multiple profiles (separate job trackers per person)
 
-Still in SQL Editor — adds a `profile` column so more than one person's tracked jobs/applications can share this one Supabase project without mixing lists. `not null default 'xavier'` backfills every existing row to `xavier` automatically, so nothing currently tracked moves or disappears; a new profile's list starts genuinely empty until rows get inserted tagged with its name.
+Still in SQL Editor — adds a `profile` column so more than one person's tracked jobs/applications can share this one Supabase project without mixing lists. `not null default 'xavier'` backfilled every existing row to `xavier` automatically at the time; a new profile's list starts genuinely empty until rows get inserted tagged with its name. **2026-08-28: the `xavier` profile was renamed to `uk`** (all existing `jobs`/`applications` rows updated, and the column default changed to `'uk'` via `alter table jobs alter column profile set default 'uk'` / same for `applications`) — `europe` was also split out as its own profile from what used to be `xavier`'s `europe` track, and `graduate-roles` added as a new profile. See `profile/uk/background.md`, `profile/europe/background.md`, `profile/graduate-roles/background.md`.
 
 ```sql
 alter table jobs
@@ -123,7 +123,7 @@ alter table applications
   add column if not exists profile text not null default 'xavier';
 ```
 
-`/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a profile pill row (Xavier / Shamna) that filters the tracker view client-side — add a new `<button class="filter-pill profile-pill" data-profile="...">` there (and wire up `setProfile`) for any profile beyond these two.
+`/find-jobs` and `/tailor-application` read the active profile from `.active-profile` (see `/switch-profile`) and tag every row they insert with it. `index.html` has a "Who's using this?" profile picker (`profile-card` buttons calling `chooseProfile(name)`) that switches the active tracker view client-side — add a new `<button class="profile-card" onclick="chooseProfile('...')">` there (and a `PROFILE_META` entry) for any profile beyond `uk`/`shamna`/`phd`/`europe`/`graduate-roles`.
 
 ## 4c. Deadline sorting
 

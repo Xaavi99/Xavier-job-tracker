@@ -6,7 +6,7 @@ argument-hint: "[industry|europe|phd] (optional — omit to run all three)"
 Run the job discovery pipeline for the active profile's (`$PROFILE`, from `.active-profile`) job tracker across its tracks. Argument: $ARGUMENTS — if one of `industry`/`europe`/`phd` is given, run only that track; otherwise run all three that have a defined scope (see step 0 — a profile may not use all three). Do this yourself step by step — do not skip steps or ask for confirmation mid-way unless something is actually ambiguous.
 
 ## 0. Load context
-- Read `.active-profile` to get `$PROFILE` (if the file is missing, `$PROFILE` is `xavier`). Every `profile/...` path below means `profile/$PROFILE/...`. If `profile/$PROFILE/` doesn't exist, stop and tell the user to run `/switch-profile` to pick a valid one.
+- Read `.active-profile` to get `$PROFILE` (if the file is missing, `$PROFILE` is `uk`). Every `profile/...` path below means `profile/$PROFILE/...`. If `profile/$PROFILE/` doesn't exist, stop and tell the user to run `/switch-profile` to pick a valid one.
 - Read `profile/$PROFILE/background.md` **in full** — this is the only source of truth for this profile's target roles, domain, and location scope per track. Some profiles don't use all three tracks (a track section may say "not used for this profile" — skip it, don't invent a scope for it). Read `profile/$PROFILE/cv.md` (industry/europe) and `profile/$PROFILE/cv-phd.md` (phd) if that track is in scope. If a needed CV file still contains only placeholder text, warn the user at the end but continue using `background.md` alone.
 - Read `.env.local` for `SUPABASE_SERVICE_ROLE_KEY`. If it's empty, stop and tell the user to complete `SETUP.md` step 5 first.
 

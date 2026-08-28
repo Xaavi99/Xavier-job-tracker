@@ -8,7 +8,7 @@ Manage which `profile/<name>/` folder is "active" — the one `/tailor-applicati
 Argument: $ARGUMENTS
 
 ## If no argument was given
-Read `.active-profile` (if missing, the active profile is `xavier` by default). List the folders under `profile/` (excluding `_template`). Report the current active profile and the full list of available ones.
+Read `.active-profile` (if missing, the active profile is `uk` by default). List the folders under `profile/` (excluding `_template`). Report the current active profile and the full list of available ones.
 
 ## If a profile name was given
 1. Check `profile/<name>/` exists.
