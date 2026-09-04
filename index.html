@@ -120,7 +120,7 @@
   .modal-close:hover{color:var(--text)}
   .modal-ats{padding:0.75rem 1.25rem;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:baseline}
   .modal-ats .score{color:var(--blue);font-weight:500}
-  .modal-tabs{display:flex;gap:6px;padding:0.75rem 1.25rem 0}
+  .modal-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:0.75rem 1.25rem 0}
   .modal-tab{font-family:var(--font-mono);font-size:11px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer}
   .modal-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
   .modal-body{padding:1.25rem;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.6}
@@ -257,7 +257,7 @@
       <button class="modal-close" onclick="closeMaterials()">&times;</button>
     </div>
     <div class="modal-ats" id="modal-ats"></div>
-    <div class="modal-tabs">
+    <div class="modal-tabs" id="modal-tabs">
       <button class="modal-tab active" id="tab-cv" onclick="showMaterialsTab('cv')">CV</button>
       <button class="modal-tab" id="tab-cl" onclick="showMaterialsTab('cl')">Cover letter</button>
     </div>
@@ -508,7 +508,7 @@ async function loadJobs() {
 
 async function loadApplications() {
   try {
-    const rows = await sbFetch('applications?select=job_id,cv_content,cover_letter_content,ats_score,ats_notes,created_at&order=created_at.asc');
+    const rows = await sbFetch('applications?select=job_id,cv_content,cover_letter_content,ats_score,ats_notes,extra_content,created_at&order=created_at.asc');
     applicationsMap = {};
     rows.forEach(r => { applicationsMap[r.job_id] = r; });
     render();
@@ -662,6 +662,21 @@ function openMaterials(jobId) {
     ? `<span class="score">ATS ${app.ats_score}/100</span><span>${esc(app.ats_notes || '')}</span>`
     : '<span>No ATS score recorded</span>';
   document.getElementById('tab-cl').textContent = job.track === 'phd' ? 'Personal statement' : 'Cover letter';
+
+  // Extra materials (e.g. supervisor outreach emails) are per-application, so
+  // rebuild the dynamic tabs every time the modal opens for a different job.
+  document.querySelectorAll('#modal-tabs .modal-tab[data-extra]').forEach(el => el.remove());
+  const extras = Array.isArray(app.extra_content) ? app.extra_content : [];
+  const tabsContainer = document.getElementById('modal-tabs');
+  extras.forEach(ex => {
+    const btn = document.createElement('button');
+    btn.className = 'modal-tab';
+    btn.textContent = ex.label;
+    btn.dataset.extra = ex.id;
+    btn.onclick = () => showMaterialsTab(ex.id);
+    tabsContainer.appendChild(btn);
+  });
+
   showMaterialsTab('cv');
   document.getElementById('materials-modal').classList.remove('hidden');
 }
@@ -676,13 +691,31 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !document.getElementById('add-role-modal').classList.contains('hidden')) closeAddRoleModal();
 });
 
+// Resolves a tab id ('cv', 'cl', or an extra_content entry's id) to its
+// content, docx layout kind, and filename fragment.
+function getTabInfo(tab) {
+  if (!modalState) return null;
+  const { app, job } = modalState;
+  if (tab === 'cv') return { content: app.cv_content, docxKind: 'cv', filenamePart: 'cv' };
+  if (tab === 'cl') return {
+    content: app.cover_letter_content,
+    docxKind: 'letter',
+    filenamePart: job.track === 'phd' ? 'personal-statement' : 'cover-letter'
+  };
+  const extra = (app.extra_content || []).find(e => e.id === tab);
+  if (extra) return { content: extra.content, docxKind: 'letter', filenamePart: slugify(extra.label) };
+  return null;
+}
+
 function showMaterialsTab(tab) {
   if (!modalState) return;
   modalState.tab = tab;
-  document.getElementById('tab-cv').classList.toggle('active', tab === 'cv');
-  document.getElementById('tab-cl').classList.toggle('active', tab === 'cl');
-  const text = tab === 'cv' ? modalState.app.cv_content : modalState.app.cover_letter_content;
-  document.getElementById('modal-body').textContent = text || '(empty)';
+  document.querySelectorAll('#modal-tabs .modal-tab').forEach(btn => {
+    const isActive = btn.id === 'tab-' + tab || btn.dataset.extra === tab;
+    btn.classList.toggle('active', isActive);
+  });
+  const info = getTabInfo(tab);
+  document.getElementById('modal-body').textContent = (info && info.content) || '(empty)';
 }
 
 function slugify(s) {
@@ -942,16 +975,15 @@ function downloadPdf(filename, markdown) {
 
 function downloadCurrentTab(format) {
   if (!modalState) return;
-  const { job, app, tab } = modalState;
+  const { job, tab } = modalState;
+  const info = getTabInfo(tab);
+  if (!info || !info.content) { showToast('Nothing to download', true); return; }
   const slug = slugify(job.company) + '-' + slugify(job.role);
-  const label = tab === 'cv' ? 'cv' : (job.track === 'phd' ? 'personal-statement' : 'cover-letter');
-  const text = tab === 'cv' ? app.cv_content : app.cover_letter_content;
-  if (!text) { showToast('Nothing to download', true); return; }
   if (format === 'pdf') {
-    downloadPdf(slug + '-' + label + '.pdf', text);
+    downloadPdf(slug + '-' + info.filenamePart + '.pdf', info.content);
     showToast('Downloaded PDF');
   } else {
-    downloadDocx(slug + '-' + label + '.docx', text, tab === 'cv' ? 'cv' : 'letter')
+    downloadDocx(slug + '-' + info.filenamePart + '.docx', info.content, info.docxKind)
       .then(() => showToast('Downloaded Word document'))
       .catch(() => showToast('Download failed — try the PDF option', true));
   }
@@ -959,9 +991,9 @@ function downloadCurrentTab(format) {
 
 async function copyCurrentTab() {
   if (!modalState) return;
-  const text = modalState.tab === 'cv' ? modalState.app.cv_content : modalState.app.cover_letter_content;
+  const info = getTabInfo(modalState.tab);
   try {
-    await navigator.clipboard.writeText(text || '');
+    await navigator.clipboard.writeText((info && info.content) || '');
     showToast('Copied to clipboard');
   } catch(e) {
     showToast('Copy failed — select and copy manually', true);

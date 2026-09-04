@@ -136,6 +136,23 @@ alter table jobs
 
 No RLS/grant changes needed — it's covered by the existing `jobs` policies and grants.
 
+## 4d. Extra materials tabs (e.g. supervisor outreach emails)
+
+Still in SQL Editor — adds a nullable `extra_content` column so an application row can carry more than just a CV and cover letter. Used for things like PhD supervisor outreach emails that belong to the same job row but aren't a CV or cover letter/personal statement.
+
+```sql
+alter table applications
+  add column if not exists extra_content jsonb;
+```
+
+Shape: an array of `{"id": "...", "label": "...", "content": "..."}` objects, e.g.:
+
+```json
+[{"id":"email_li","label":"Email: Prof. Qing Li","content":"# Email to...\n\n..."}]
+```
+
+`index.html`'s materials modal renders one extra tab per array entry, alongside the CV and Cover letter/Personal statement tabs, and download/copy work identically (content is treated as `letter`-style for `.docx` layout). No RLS/grant changes needed — covered by the existing `applications` policies and grants. Nullable — rows without it just show the two standard tabs.
+
 ## 5. Service role key for local agent commands
 
 Settings → API → copy the **service_role** key (not anon). Paste it into `.env.local` in this repo (already gitignored — never commit it):
