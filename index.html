@@ -125,6 +125,28 @@
   .modal-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
   .modal-body{padding:1.25rem;overflow-y:auto;flex:1;white-space:pre-wrap;font-size:13px;line-height:1.6}
   .modal-actions{display:flex;gap:8px;padding:1rem 1.25rem;border-top:1px solid var(--border)}
+  .path-banner{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;margin-bottom:1.25rem}
+  .path-banner h3{font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text)}
+  .path-banner ol{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:5px}
+  .path-banner li{font-size:12.5px;color:var(--muted);line-height:1.5}
+  .course-category{margin-bottom:1.75rem}
+  .course-category h2{font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .course-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:8px}
+  .course-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .course-title{font-size:13.5px;font-weight:500;line-height:1.35}
+  .course-title a{color:var(--text);text-decoration:none}
+  .course-title a:hover{color:var(--accent)}
+  .course-provider{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .course-meta{display:flex;gap:6px;flex-wrap:wrap}
+  .course-meta-tag{font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+  .course-desc{font-size:12px;color:var(--muted);line-height:1.5}
+  .course-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:4px}
+  .s-course-Not-started{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
+  .s-course-In-progress{background:rgba(255,181,71,0.1);color:var(--amber);border:1px solid rgba(255,181,71,0.2)}
+  .s-course-Completed{background:rgba(200,255,87,0.1);color:var(--accent);border:1px solid rgba(200,255,87,0.2)}
+  .course-notes{width:100%;background:transparent;border:none;border-top:1px dashed var(--border);color:var(--text);font-family:var(--font-body);font-size:11.5px;padding:6px 0 0;outline:none}
+  .course-notes::placeholder{color:#3a3a3e}
 </style>
 </head>
 <body>
@@ -157,18 +179,18 @@
 <header>
   <div class="brand">
     <span class="brand-title" id="brand-title">Xavier Sojan · UK</span>
-    <h1>Job <span>tracker</span></h1>
+    <h1 id="page-h1">Job <span>tracker</span></h1>
   </div>
   <div class="header-actions">
     <div class="sync-status">
       <div class="sync-dot" id="sync-dot"></div>
       <span id="sync-label">connected</span>
     </div>
-    <button class="btn" onclick="exportCSV()">
+    <button class="btn" id="btn-export" onclick="exportCSV()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export CSV
     </button>
-    <button class="btn btn-accent" onclick="openAddRoleModal()">
+    <button class="btn btn-accent" id="btn-add-role" onclick="openAddRoleModal()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add role
     </button>
@@ -176,6 +198,8 @@
     <button class="btn" onclick="signOut()">Sign out</button>
   </div>
 </header>
+
+<div id="jobs-view">
 
 <div class="stats">
   <div class="stat"><div class="stat-label">Total</div><div class="stat-num" id="st-total">—</div></div>
@@ -246,6 +270,47 @@
       <tr><td colspan="100%"><div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div></td></tr>
     </tbody>
   </table>
+</div>
+
+</div>
+
+<div id="courses-view" class="hidden">
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">Total</div><div class="stat-num" id="c-st-total">—</div></div>
+  <div class="stat"><div class="stat-label">Not started</div><div class="stat-num" id="c-st-not-started">—</div></div>
+  <div class="stat"><div class="stat-label">In progress</div><div class="stat-num accent" id="c-st-in-progress">—</div></div>
+  <div class="stat"><div class="stat-label">Completed</div><div class="stat-num" id="c-st-completed">—</div></div>
+</div>
+
+<div class="path-banner">
+  <h3>Suggested stacking order</h3>
+  <ol>
+    <li>Free intro course — vocabulary/foundation</li>
+    <li>Offshore Wind Learning (£100) — recognized cert + EI/IMarEST membership discount</li>
+    <li>GWO Basic Safety Training (BST) + Basic Technical Training (BTT) — baseline employers actually check for</li>
+    <li>O&M-specific credential — Bristol CC certificate, MTA Diploma, or DNV Upskilling</li>
+    <li>Specialization — ROV Pilot Technician II or Subsea Integrity Management (SeaFlo), depending on target role</li>
+  </ol>
+</div>
+
+<div class="controls">
+  <button class="filter-pill course-status-pill active" onclick="setCourseStatus('all',this)">All statuses</button>
+  <button class="filter-pill course-status-pill" onclick="setCourseStatus('Not started',this)">Not started</button>
+  <button class="filter-pill course-status-pill" onclick="setCourseStatus('In progress',this)">In progress</button>
+  <button class="filter-pill course-status-pill" onclick="setCourseStatus('Completed',this)">Completed</button>
+  <div class="search-wrap">
+    <div class="search-input-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="course-search" placeholder="Search courses…" oninput="renderCourses()">
+    </div>
+  </div>
+</div>
+
+<div id="course-list">
+  <div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div>
+</div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -347,9 +412,12 @@ const SEED = [
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
+const COURSE_STATUSES = ['Not started','In progress','Completed'];
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
 let applicationsMap = {};
+let courses = [];
+let currentCourseStatus = 'all';
 let currentProfile = localStorage.getItem('xjt_profile') || 'uk';
 // Single source of truth for the profile picker, branding, and which tracks each profile can have jobs in
 // (the track-pill row itself doesn't filter per-profile yet — `tracks` is here so that's a config change, not a rediscovery, when it does).
@@ -359,7 +427,8 @@ const PROFILES = [
   { id: 'graduate-roles', avatar: 'Grad', avatarSize: 16, label: 'Xavier — Graduate Roles',  title: 'Xavier Sojan · Graduate Roles',      tab: 'Graduate Roles — Job Tracker',  tracks: ['industry'] },
   { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna',                             tab: 'Shamna — Job Tracker',          tracks: ['industry'] },
   { id: 'phd',            avatar: 'PhD',  avatarSize: 18, label: 'PhD Scholarships',         title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker', tracks: ['phd'] },
-  { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] }
+  { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] },
+  { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses' }
 ];
 
 function renderProfileGrid() {
@@ -370,10 +439,21 @@ function renderProfileGrid() {
       </button>`).join('');
 }
 
+function profileKind(p) {
+  const found = PROFILES.find(x => x.id === p);
+  return (found && found.kind) || 'jobs';
+}
+
 function applyProfileBranding(p) {
   const found = PROFILES.find(x => x.id === p) || { title: p, tab: p + ' — Job Tracker' };
   document.getElementById('brand-title').textContent = found.title;
   document.title = found.tab;
+  const isCourses = profileKind(p) === 'courses';
+  document.getElementById('page-h1').innerHTML = isCourses ? 'Course <span>tracker</span>' : 'Job <span>tracker</span>';
+  document.getElementById('jobs-view').classList.toggle('hidden', isCourses);
+  document.getElementById('courses-view').classList.toggle('hidden', !isCourses);
+  document.getElementById('btn-add-role').classList.toggle('hidden', isCourses);
+  document.getElementById('btn-export').classList.toggle('hidden', isCourses);
 }
 let currentFilter = 'all';
 let currentTrack = 'all';
@@ -559,6 +639,48 @@ async function deleteJob(id) {
   }
 }
 
+// ── COURSES ───────────────────────────────────────────────────────────────────
+async function loadCourses() {
+  try {
+    const data = await sbFetch('courses?select=*&order=sort_order');
+    courses = data || [];
+    renderCourses();
+    setSyncStatus('');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Could not load courses', true);
+    document.getElementById('course-list').innerHTML = '<div class="loading">Could not load data. Check your connection.</div>';
+  }
+}
+
+async function updateCourse(id, fields) {
+  setSyncStatus('saving');
+  try {
+    await sbFetch('courses?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(fields) });
+    setSyncStatus('saved');
+  } catch(e) {
+    setSyncStatus('error');
+    showToast('Save failed', true);
+  }
+}
+
+function updateCourseFieldLocal(id, field, val) {
+  const c = courses.find(x => x.id === id);
+  if (!c) return;
+  c[field] = val;
+  clearTimeout(debounceTimers['course' + id + field]);
+  debounceTimers['course' + id + field] = setTimeout(() => updateCourse(id, { [field]: val }), 600);
+}
+
+async function cycleCourseStatus(id) {
+  const c = courses.find(x => x.id === id);
+  if (!c) return;
+  c.status = COURSE_STATUSES[(COURSE_STATUSES.indexOf(c.status) + 1) % COURSE_STATUSES.length];
+  renderCourses();
+  showToast('Status → ' + c.status);
+  await updateCourse(id, { status: c.status });
+}
+
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
 async function cycleStatus(id) {
   const j = jobs.find(x => x.id === id);
@@ -612,19 +734,23 @@ function submitAddRole() {
   addRow(link, jdText);
 }
 
-function activatePill(scopeSelector, setter, value, btn) {
+function activatePill(scopeSelector, setter, value, btn, renderFn) {
   setter(value);
   document.querySelectorAll(scopeSelector).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  render();
+  (renderFn || render)();
 }
 
 function setFilter(f, btn) {
-  activatePill('.filter-pill:not(.track-pill):not(.country-pill):not(.materials-pill)', v => currentFilter = v, f, btn);
+  activatePill('.filter-pill:not(.track-pill):not(.country-pill):not(.materials-pill):not(.course-status-pill)', v => currentFilter = v, f, btn);
 }
 
 function setTrack(t, btn) {
   activatePill('.track-pill', v => currentTrack = v, t, btn);
+}
+
+function setCourseStatus(s, btn) {
+  activatePill('.course-status-pill', v => currentCourseStatus = v, s, btn, renderCourses);
 }
 
 function showProfileScreen() {
@@ -638,7 +764,11 @@ function chooseProfile(p) {
   localStorage.setItem('xjt_profile', p);
   applyProfileBranding(p);
   showApp();
-  if (jobs.length === 0) loadJobs(); else render();
+  if (profileKind(p) === 'courses') {
+    if (courses.length === 0) loadCourses(); else renderCourses();
+  } else {
+    if (jobs.length === 0) loadJobs(); else render();
+  }
 }
 
 function setCountry(c, btn) {
@@ -1096,6 +1226,57 @@ function render() {
   document.getElementById('st-offer').textContent    = profileJobs.filter(j => j.status === 'Offer').length;
   document.getElementById('st-tierA').textContent    = profileJobs.filter(j => j.tier === 'A').length;
   document.getElementById('st-tierB').textContent    = profileJobs.filter(j => j.tier === 'B').length;
+}
+
+function courseStatusClass(status) {
+  return 's-course-' + (status || 'Not started').replace(/\s+/g, '-');
+}
+
+function renderCourses() {
+  const query = document.getElementById('course-search').value.toLowerCase();
+  const filtered = courses.filter(c => {
+    const statusMatch = currentCourseStatus === 'all' || c.status === currentCourseStatus;
+    const searchMatch = !query || (c.title + c.provider + (c.description||'')).toLowerCase().includes(query);
+    return statusMatch && searchMatch;
+  });
+
+  const categories = [...new Set(courses.map(c => c.category))];
+  const list = document.getElementById('course-list');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="loading">no courses match this filter</div>';
+  } else {
+    list.innerHTML = categories.map(cat => {
+      const inCat = filtered.filter(c => c.category === cat);
+      if (inCat.length === 0) return '';
+      return `
+        <div class="course-category">
+          <h2>${esc(cat)}</h2>
+          <div class="course-grid">
+            ${inCat.map(c => `
+              <div class="course-card">
+                <div class="course-card-head">
+                  <div>
+                    <div class="course-title">${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a>` : esc(c.title)}</div>
+                    ${c.provider ? `<div class="course-provider">${esc(c.provider)}</div>` : ''}
+                  </div>
+                </div>
+                ${(c.cost || c.duration) ? `<div class="course-meta">${c.cost ? `<span class="course-meta-tag">${esc(c.cost)}</span>` : ''}${c.duration ? `<span class="course-meta-tag">${esc(c.duration)}</span>` : ''}</div>` : ''}
+                ${c.description ? `<div class="course-desc">${esc(c.description)}</div>` : ''}
+                <div class="course-card-foot">
+                  <span class="status-pill ${courseStatusClass(c.status)}" onclick="cycleCourseStatus(${c.id})" title="Click to cycle">${esc(c.status || 'Not started')}</span>
+                </div>
+                <input type="text" class="course-notes" value="${esc(c.notes||'')}" placeholder="Add notes…" oninput="updateCourseFieldLocal(${c.id},'notes',this.value)">
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('c-st-total').textContent = courses.length;
+  document.getElementById('c-st-not-started').textContent = courses.filter(c => c.status === 'Not started').length;
+  document.getElementById('c-st-in-progress').textContent = courses.filter(c => c.status === 'In progress').length;
+  document.getElementById('c-st-completed').textContent = courses.filter(c => c.status === 'Completed').length;
 }
 
 function showToast(msg, isError = false) {
