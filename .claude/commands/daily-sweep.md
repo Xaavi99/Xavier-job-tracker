@@ -42,6 +42,11 @@ Open https://www.linkedin.com/messaging/ and read unread or new threads. Log a `
 
 ### 3. Easy Apply and job search
 Search LinkedIn Jobs for the past 24 hours, Easy Apply first, using Xavier's target titles: O&M Engineer, Reliability Engineer, Asset Integrity / Integrity Engineer, Inspection Engineer, Maintenance Engineer, Condition Monitoring Engineer, Offshore Wind graduate roles. Search the UK plus the Netherlands, Denmark, Norway, Germany, UAE, Saudi Arabia, Qatar, Singapore and Australia.
+- **Easy Apply: use the logged-in search, not WebFetch.** The logged-out guest search can't filter Easy Apply and returns a thin sample. In Chrome, open `https://www.linkedin.com/jobs/search/?keywords=<terms>&geoId=<geo>&f_AL=true&f_TPR=r604800`. Geo IDs: UK 101165590, UAE 104305776, Netherlands 102890719, Norway 103819153, Saudi Arabia 100459316, Qatar 104170880, Singapore 102454443, Australia 101452733. "Worldwide" (92000000) just localises to the UK.
+  - Cards in the list have no links. Click each card, then wait until the detail pane has an `a[href*="/jobs/view/<currentJobId>"]` before reading `document.title`. Without that wait, titles land on the wrong job ID.
+  - Run the click loop as a background promise (`window.__res`) and poll it, because one call times out after 45 seconds.
+  - LinkedIn's CSP blocks `eval`, so pass the full script in each call.
+  - Ignore "Site Reliability Engineer" results (software roles).
 - Read each job description with WebFetch on the public guest URL (`uk.linkedin.com/jobs/view/<id>`), because the in-app pane often fails to load.
 - Screen honestly: skip roles needing 5+ years, a language Xavier doesn't speak, local residency with no sponsorship, or a different discipline.
 - For each fit, add a `jobs` row with tier and honest gap notes, and log `job_found`.
