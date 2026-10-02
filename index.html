@@ -152,6 +152,10 @@
   .hot-action{font-size:12px;color:var(--amber);line-height:1.5;border-left:2px solid var(--amber);padding-left:8px}
   .hot-btns{display:flex;gap:6px;flex-wrap:wrap}
   .hot-btns .btn{font-size:11px;padding:4px 10px}
+  .ats-tag{font-weight:600;cursor:help}
+  .ats-high{background:rgba(200,255,87,0.12);color:var(--accent);border-color:rgba(200,255,87,0.3)}
+  .ats-mid{background:rgba(255,181,71,0.12);color:var(--amber);border-color:rgba(255,181,71,0.3)}
+  .ats-low{background:rgba(136,136,144,0.12);color:var(--muted)}
   .log-day{margin-bottom:1.5rem}
   .log-day h2{font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
   .log-row{display:grid;grid-template-columns:52px 130px 120px 1fr;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border);font-size:12.5px}
@@ -1380,10 +1384,16 @@ function profileLabel(id) {
   return p ? p.label : (id || '');
 }
 
+function atsClass(score) {
+  return score >= 80 ? 'ats-high' : score >= 65 ? 'ats-mid' : 'ats-low';
+}
+
 function renderHot() {
   const hot = jobs
     .filter(j => j.hot && !CLOSED_STATUSES.includes(j.status))
-    .sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999') || (a.tier || 'Z').localeCompare(b.tier || 'Z'));
+    .sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999')
+      || ((applicationsMap[b.id]?.ats_score ?? -1) - (applicationsMap[a.id]?.ats_score ?? -1))
+      || (a.tier || 'Z').localeCompare(b.tier || 'Z'));
   const list = document.getElementById('hot-list');
   if (hot.length === 0) {
     list.innerHTML = '<div class="loading">nothing needs your action right now</div>';
@@ -1398,6 +1408,7 @@ function renderHot() {
           ${j.tier ? `<span class="tier-badge tier-${esc(j.tier)}">${esc(j.tier)}</span>` : ''}
         </div>
         <div class="course-meta">
+          ${applicationsMap[j.id] && applicationsMap[j.id].ats_score != null ? `<span class="course-meta-tag ats-tag ${atsClass(applicationsMap[j.id].ats_score)}" title="${esc(applicationsMap[j.id].ats_notes || '')}">ATS ${applicationsMap[j.id].ats_score}</span>` : ''}
           <span class="course-meta-tag">${esc(profileLabel(j.profile))}</span>
           ${j.deadline ? `<span class="course-meta-tag" style="color:${deadlineColor(j.deadline)}">closes ${esc(j.deadline)}</span>` : ''}
           ${j.referral ? '<span class="course-meta-tag referral-tag">referral</span>' : ''}
@@ -1405,8 +1416,9 @@ function renderHot() {
         ${j.hot_reason ? `<div class="hot-reason">${esc(j.hot_reason)}</div>` : ''}
         ${j.action_needed ? `<div class="hot-action">${esc(j.action_needed)}</div>` : ''}
         <div class="course-card-foot hot-btns">
-          ${applicationsMap[j.id] ? `<button class="btn btn-accent" onclick="openMaterials(${j.id})">CV &amp; letter</button>` : ''}
-          ${j.link ? `<a class="btn" href="${esc(j.link)}" target="_blank" rel="noopener">Open posting</a>` : ''}
+          ${(j.apply_url || j.link) ? `<a class="btn btn-accent" href="${esc(j.apply_url || j.link)}" target="_blank" rel="noopener">Apply now</a>` : ''}
+          ${applicationsMap[j.id] ? `<button class="btn" onclick="openMaterials(${j.id})">CV &amp; letter</button>` : ''}
+          ${j.link && j.apply_url && j.link !== j.apply_url ? `<a class="btn" href="${esc(j.link)}" target="_blank" rel="noopener">Posting</a>` : ''}
           <button class="btn" onclick="markHotApplied(${j.id})">Mark applied</button>
           <button class="btn" onclick="dismissHot(${j.id})">Not for me</button>
         </div>
