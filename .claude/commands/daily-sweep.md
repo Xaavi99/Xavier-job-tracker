@@ -31,17 +31,25 @@ You run unattended every 6 hours (Windows Task Scheduler) on Xavier Sojan's PC, 
 
 ## Steps
 
+### 0. Work out the time window
+Find the last `Sweep summary` row in `automation_log` and use its `created_at` as **since**. If there's none, or it's older than 7 days, use 7 days ago. Every step below looks at everything since then, not just "today", so a missed run never loses anything.
+
 ### 1. Gmail check
-Search Gmail for anything new since the last sweep (`newer_than:1d`) from recruiters, employers, professors or people in recent `automation_log` recipients, and from LinkedIn job alerts. For each meaningful item:
+Search Gmail for anything new since **since** (`after:<YYYY/MM/DD>`) from recruiters, employers, professors or people in recent `automation_log` recipients, and from LinkedIn job alerts. For each meaningful item:
 - Log `gmail_check` / `done` with a one-line summary.
 - If it's a reply needing an answer, draft a reply and queue it as `email` / `awaiting_approval`.
 - If it changes a job's state (interview invite, rejection, request for documents), update that job's `notes` and set `hot=true` with `action_needed`. Never change `status` to Interview or Rejected yourself unless the email clearly says so.
 
-### 2. LinkedIn messages
-Open https://www.linkedin.com/messaging/ and read unread or new threads. Log a `linkedin_check` summary. Draft replies where useful and queue them as `linkedin_message` / `awaiting_approval`.
+### 2. LinkedIn messages (open every changed thread)
+Open https://www.linkedin.com/messaging/. Scroll the conversation list until the timestamps are older than **since**.
+- **Open every thread with activity since the last sweep**, not just unread ones. Read the last messages and note who sent the newest one. A thread where the other person spoke last counts as a reply, even if LinkedIn already marked it read.
+- Pay particular attention to people in recent `automation_log` recipients (Megha, Karim, Stuart, recruiters) and anyone in `jobs` notes.
+- Ignore sponsored or InMail adverts.
+- For each real reply: log `linkedin_check` with a one-line summary, update the related job's `notes`, set `hot=true` with `action_needed` if Xavier must act, and draft a reply as `linkedin_message` / `awaiting_approval`.
+- Also check **My Network → Invitations** for accepted or pending connection requests (for example Karim and Stuart), and log any acceptances.
 
 ### 3. Easy Apply and job search
-Search LinkedIn Jobs for the past 24 hours, Easy Apply first, using Xavier's target titles: O&M Engineer, Reliability Engineer, Asset Integrity / Integrity Engineer, Inspection Engineer, Maintenance Engineer, Condition Monitoring Engineer, Offshore Wind graduate roles. Search the UK plus the Netherlands, Denmark, Norway, Germany, UAE, Saudi Arabia, Qatar, Singapore and Australia.
+Search LinkedIn Jobs for the past week (`f_TPR=r604800`, skipping IDs already in `jobs`), Easy Apply first, using Xavier's target titles: O&M Engineer, Reliability Engineer, Asset Integrity / Integrity Engineer, Inspection Engineer, Maintenance Engineer, Condition Monitoring Engineer, Offshore Wind graduate roles. Search the UK plus the Netherlands, Denmark, Norway, Germany, UAE, Saudi Arabia, Qatar, Singapore and Australia.
 - **Easy Apply: use the logged-in search, not WebFetch.** The logged-out guest search can't filter Easy Apply and returns a thin sample. In Chrome, open `https://www.linkedin.com/jobs/search/?keywords=<terms>&geoId=<geo>&f_AL=true&f_TPR=r604800`. Geo IDs: UK 101165590, UAE 104305776, Netherlands 102890719, Norway 103819153, Saudi Arabia 100459316, Qatar 104170880, Singapore 102454443, Australia 101452733. "Worldwide" (92000000) just localises to the UK.
   - Cards in the list have no links. Click each card, then wait until the detail pane has an `a[href*="/jobs/view/<currentJobId>"]` before reading `document.title`. Without that wait, titles land on the wrong job ID.
   - Run the click loop as a background promise (`window.__res`) and poll it, because one call times out after 45 seconds.
@@ -53,22 +61,43 @@ Search LinkedIn Jobs for the past 24 hours, Easy Apply first, using Xavier's tar
 - If it's Easy Apply: tailor a CV markdown in `applications/<slug>/cv.md`. Build the DOCX with `C:/Users/iamxa/OneDrive/Apps/Projects/job/tools/build_cv.py <md> <docx>`, then a PDF with LibreOffice (`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --convert-to pdf`). Save to `applications` and queue `easy_apply` / `awaiting_approval`. **Do not open the apply form.**
 - If it's an external application: set `hot=true`, plus `hot_reason` and `action_needed` (what Xavier must do, which CV to use).
 
-### 4. Hiring posts with email addresses
-Search LinkedIn posts from 1st-degree connections in the past week (`/search/results/content/?keywords=<term>&postedBy=["first"]&datePosted="past-week"`), reading with get_page_text. Terms: hiring engineer, offshore wind hiring, integrity engineer, O&M engineer, inspection engineer, reliability engineer, send your CV.
-- For relevant roles with an email address, draft a short speculative or application email in Xavier's voice with the right CV attached, and queue it as `email` / `awaiting_approval`.
-- Skip roles that clearly don't fit.
+### 4. Home feed (full scroll)
+Open https://www.linkedin.com/feed/?sortBy=RECENT. The scrolling element is `<main>`, not the window.
+- Run a background loop: set `main.scrollTop += 1100`, wait about 1.3 seconds, click any "Show more" button, then collect `main.innerText` split on `
+Feed post` into a de-duplicated map. Repeat until no new posts appear for about 8 rounds, or the posts are older than **since**.
+- Close any Premium upsell popup first. It blocks scrolling.
+- From the collected posts, pull out:
+  - every email address;
+  - hiring posts (hiring, vacancy, we're looking for, send your CV, apply, opening) for integrity, inspection, reliability, O&M, subsea, offshore wind or graduate roles;
+  - people worth contacting: new roles at operators, recruiters, and anyone at a target company.
+- Log one `feed_scan` row with counts and highlights.
 
-### 5. PhD supervisor outreach
+### 5. Connection posts (deep search)
+Search posts from 1st-degree connections since **since** (use `datePosted="past-week"`, or `"past-month"` on the first run or after a gap), reading with get_page_text. Use all these terms:
+- hiring engineer
+- offshore wind hiring
+- integrity engineer
+- inspection engineer
+- reliability engineer
+- O&M engineer
+- subsea hiring
+- graduate engineer
+- send your CV
+- maintenance engineer
+
+For relevant roles with an email address, draft a short application or speculative email in Xavier's voice with the right CV attached, and queue it as `email` / `awaiting_approval`. Skip roles that clearly don't fit, and recipients already emailed in the last 30 days.
+
+### 6. PhD supervisor outreach
 Only if fewer than 3 `phd_outreach` rows exist in the last 7 days.
 - Find **one** supervisor in the UK, Netherlands, Denmark, Norway or Germany with a funded PhD or open call, or an active group, in one of these areas:
   - offshore wind O&M and reliability
   - digital twins and condition monitoring
   - marine and offshore structural integrity
   - energy transition assets (hydrogen, CCS)
-- Read one of their recent papers (title and abstract are enough) and write a personalised email of 150 to 220 words. Connect the paper to Xavier's dissertation (Markov Chain plus MPC heavy maintenance for floating wind) or his RBI background. Ask whether they have funded positions or would consider supervising. Attach `Xavier_Sojan_PhD_CV.pdf` if it exists in `cv/`, otherwise the O&M CV.
+- Read one of their recent papers (title and abstract are enough) and write a personalised email of 150 to 220 words. Connect the paper to Xavier's dissertation (Markov Chain plus MPC heavy maintenance for floating wind) or his RBI background. Ask whether they have funded positions or would consider supervising. Attach the closest tailored PhD CV (`Xavier_Sojan_PhD_CV_Predictive_Maintenance.pdf`, `..._Digital_Twins.pdf` or `..._Reliability_Integrity.pdf` in the job folder) plus `Xavier_Sojan_Thesis_Poster_A0.pdf`.
 - Queue it as `phd_outreach` / `awaiting_approval` with the professor's university email, found on the official university page only.
 - Add or refresh a `jobs` row with `profile='phd'` if there's a specific funded position.
 
-### 6. Wrap up
-- Log one `other` / `done` row titled `Sweep summary`, with counts: new jobs, Easy Apply prepped, emails drafted, PhD drafts, replies found.
+### 7. Wrap up
+- Log one `other` / `done` row titled `Sweep summary`, with counts: new jobs, Easy Apply prepped, emails drafted, PhD drafts, replies found (Gmail and LinkedIn), feed posts scanned, and connection-post hits.
 - Print a 5-line summary to stdout.
