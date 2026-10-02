@@ -153,6 +153,8 @@
   .hot-btns{display:flex;gap:6px;flex-wrap:wrap}
   .hot-btns .btn{font-size:11px;padding:4px 10px}
   .ats-tag{font-weight:600;cursor:help}
+  .log-status-select{appearance:none;-webkit-appearance:none;cursor:pointer;justify-self:start;padding-right:18px;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 9px) 50%,calc(100% - 5px) 50%;background-size:4px 4px;background-repeat:no-repeat}
+  .log-status-select option{background:var(--surface2);color:var(--text)}
   .ats-high{background:rgba(200,255,87,0.12);color:var(--accent);border-color:rgba(200,255,87,0.3)}
   .ats-mid{background:rgba(255,181,71,0.12);color:var(--amber);border-color:rgba(255,181,71,0.3)}
   .ats-low{background:rgba(136,136,144,0.12);color:var(--muted)}
@@ -1478,14 +1480,32 @@ function setLogStatus(s, btn) {
   activatePill('.log-status-pill', v => currentLogStatus = v, s, btn, renderAutomation);
 }
 
-async function skipLogItem(id) {
+const LOG_STATUSES = ['awaiting_approval', 'approved', 'sent', 'done', 'skipped', 'failed'];
+// Outgoing items (emails, messages, applications) are "sent" when completed; checks and notes are "done".
+const SENDABLE_KINDS = ['email', 'linkedin_message', 'connection_request', 'easy_apply', 'phd_outreach', 'calendar'];
+
+async function setLogItemStatus(id, status) {
   const item = automationLog.find(x => x.id === id);
-  if (!item) return;
-  item.status = 'skipped';
+  if (!item || item.status === status) return;
+  const prev = item.status;
+  item.status = status;
   renderAutomation();
-  await sbFetch('automation_log?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status: 'skipped', updated_at: new Date().toISOString() }) });
-  showToast('Skipped');
+  try {
+    await sbFetch('automation_log?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status, updated_at: new Date().toISOString() }) });
+    showToast('Status: ' + status.replace('_', ' '));
+  } catch (e) {
+    item.status = prev;
+    renderAutomation();
+    showToast('Could not update status', true);
+  }
 }
+
+function markLogItemDone(id) {
+  const item = automationLog.find(x => x.id === id);
+  if (item) setLogItemStatus(id, SENDABLE_KINDS.includes(item.kind) ? 'sent' : 'done');
+}
+
+function skipLogItem(id) { setLogItemStatus(id, 'skipped'); }
 
 function renderAutomation() {
   const query = document.getElementById('log-search').value.toLowerCase();
@@ -1513,13 +1533,15 @@ function renderAutomation() {
           <div class="log-row">
             <div class="log-time">${new Date(x.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</div>
             <span class="log-kind">${esc(LOG_KIND_LABELS[x.kind] || x.kind)}</span>
-            <span class="status-pill s-log-${esc(x.status)}">${esc(x.status.replace('_', ' '))}</span>
+            <select class="status-pill log-status-select s-log-${esc(x.status)}" onchange="setLogItemStatus(${x.id}, this.value)" title="Change status">
+              ${LOG_STATUSES.map(s => `<option value="${s}"${s === x.status ? ' selected' : ''}>${s.replace('_', ' ')}</option>`).join('')}
+            </select>
             <div>
               <div class="log-title">${esc(x.title)}</div>
               ${x.recipient ? `<div class="log-sub">→ ${esc(x.recipient)}</div>` : ''}
               ${x.details ? `<div class="log-sub">${esc(x.details)}</div>` : ''}
               ${draft ? `<details><summary>view draft</summary><pre>${esc(draft)}</pre></details>` : ''}
-              ${x.status === 'awaiting_approval' ? `<div class="hot-btns" style="margin-top:6px"><button class="btn" onclick="skipLogItem(${x.id})">Skip this</button></div>` : ''}
+              ${x.status === 'awaiting_approval' ? `<div class="hot-btns" style="margin-top:6px"><button class="btn btn-accent" onclick="markLogItemDone(${x.id})">${SENDABLE_KINDS.includes(x.kind) ? 'Mark sent' : 'Mark done'}</button><button class="btn" onclick="skipLogItem(${x.id})">Skip this</button></div>` : ''}
             </div>
           </div>`;
         }).join('')}
