@@ -1422,7 +1422,6 @@ function renderHot() {
           ${applicationsMap[j.id] ? `<button class="btn" onclick="openMaterials(${j.id})">CV &amp; letter</button>` : ''}
           ${j.link && j.apply_url && j.link !== j.apply_url ? `<a class="btn" href="${esc(j.link)}" target="_blank" rel="noopener">Posting</a>` : ''}
           <button class="btn" onclick="markHotApplied(${j.id})">Mark applied</button>
-          <button class="btn" onclick="dismissHot(${j.id})">Not for me</button>
         </div>
       </div>`).join('')}</div>`;
   }
@@ -1444,14 +1443,6 @@ async function markHotApplied(id) {
   showToast('Marked as applied');
 }
 
-async function dismissHot(id) {
-  const j = jobs.find(x => x.id === id);
-  if (!j) return;
-  j.hot = false;
-  renderHot();
-  await updateJob(id, { hot: false });
-  showToast('Removed from hot jobs');
-}
 
 // ── AI AUTOMATION LOG ─────────────────────────────────────────────────────────
 const LOG_KIND_LABELS = {
