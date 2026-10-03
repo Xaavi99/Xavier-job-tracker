@@ -35,7 +35,8 @@ You run unattended every 6 hours (Windows Task Scheduler) on Xavier Sojan's PC, 
 Find the last `Sweep summary` row in `automation_log` and use its `created_at` as **since**. If there's none, or it's older than 7 days, use 7 days ago. Every step below looks at everything since then, not just "today", so a missed run never loses anything.
 
 ### 1. Gmail check
-Search Gmail for anything new since **since** (`after:<YYYY/MM/DD>`) from recruiters, employers, professors or people in recent `automation_log` recipients, and from LinkedIn job alerts. For each meaningful item:
+Search Gmail for anything new since **since** (`after:<YYYY/MM/DD>`) from recruiters, employers, professors or people in recent `automation_log` recipients, and from **job alert emails (LinkedIn, Indeed, Totaljobs, Reed, Energy Jobline, Vaia, trac.jobs)**.
+- For each alert email, open it and screen every listed role, not just the headline one. For a fit, open the listing (for Indeed, use `uk.indeed.com/viewjob?jk=<jk>` from the link, in Chrome, because WebFetch gets a 401) and handle it as in step 3. Also check whether it's a second location of a role already applied to (for example Altrad Inspection Support in Aberdeen and Warrington). If so, add it as a separate job and note the earlier application. For each meaningful item:
 - Log `gmail_check` / `done` with a one-line summary.
 - If it's a reply needing an answer, draft a reply and queue it as `email` / `awaiting_approval`.
 - If it changes a job's state (interview invite, rejection, request for documents), update that job's `notes` and set `hot=true` with `action_needed`. Never change `status` to Interview or Rejected yourself unless the email clearly says so.
