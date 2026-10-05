@@ -101,6 +101,7 @@ Check these employers' own career sites directly, because many roles never reach
 - **Offshore wind operators:** Ørsted (orsted.com/en/careers), RWE (rwe.com/en/career), SSE Renewables (careers.sse.com), Equinor (equinor.com/careers), Vattenfall (group.vattenfall.com/careers), ScottishPower Renewables (scottishpower.com/careers), Masdar (masdar.ae/en/careers)
 - **Subsea and inspection:** Fugro (fugro.com/careers/jobs), Subsea7 (careers.subsea7.com), Oceaneering (oceaneering.com/careers), Mermaid (mermaid-group.com/careers)
 - **Integrity consultancies and contractors:** Kent (kentplc.com/careers), Wood (woodplc.com/careers), Altrad (altrad.com careers), Lloyd's Register (lr.org careers), DNV (dnv.com/careers), Bureau Veritas
+- **Professional body board:** IMarEST Marine Jobs at `https://www.imarest.org/marine-jobs.html` (listings under `imarest.org/job/`; the old `jobs.imarest.org` no longer resolves). Small board, mostly seagoing officer and vessel engineer roles, so screen for shore-based engineering, offshore wind and integrity roles.
 - **Graduate schemes** (from September to December): Shell, BP, TotalEnergies, Equinor, Ørsted, RWE and SSE graduate programmes
 
 Then:
