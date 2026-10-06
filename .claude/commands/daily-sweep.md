@@ -133,16 +133,28 @@ Find `automation_log` rows with `status='sent'` and kind `email`, `phd_outreach`
 - **For Easy Apply roles,** don't email anyone. Mention it in the summary as "no response yet".
 - **One follow-up per item, ever.** After 21 days, just log it as gone quiet in the summary.
 
-### 8. PhD supervisor outreach
-Only if fewer than 3 `phd_outreach` rows exist in the last 7 days.
-- Find **one** supervisor in the UK, Netherlands, Denmark, Norway or Germany with a funded PhD or open call, or an active group, in one of these areas:
-  - offshore wind O&M and reliability
-  - digital twins and condition monitoring
-  - marine and offshore structural integrity
-  - energy transition assets (hydrogen, CCS)
-- Read one of their recent papers (title and abstract are enough) and write a personalised email of 150 to 220 words. Connect the paper to Xavier's dissertation (Markov Chain plus MPC heavy maintenance for floating wind) or his RBI background. Ask whether they have funded positions or would consider supervising. Attach the closest tailored PhD CV (`Xavier_Sojan_PhD_CV_Predictive_Maintenance.pdf`, `..._Digital_Twins.pdf` or `..._Reliability_Integrity.pdf` in the job folder) plus `Xavier_Sojan_Thesis_Poster_A0.pdf`.
-- Queue it as `phd_outreach` / `awaiting_approval` with the professor's university email, found on the official university page only.
-- Add or refresh a `jobs` row with `profile='phd'` if there's a specific funded position.
+### 8. PhD: advertised positions first, then outreach
+Strategy rebuilt 6 Oct 2026 from `profile/phd/PhD_Plan_2026-10-06.md`. Goal: a **funded PhD in the Netherlands or Denmark starting 2027** in offshore wind O&M, reliability, inspection or monitoring. Advertised funded positions are now the **main channel**; cold emails are secondary.
+
+**a. Check these boards every run** and add anything that fits **70% or more** as a `jobs` row with `profile='phd'`, `track='phd'`, the real deadline, and `hot=true` if the deadline is inside 21 days:
+- TU Delft careers, AcademicTransfer (NL), DTU job portal (search "PhD wind"), Aalborg University vacancies, EURAXESS (search "offshore wind PhD").
+- Check the deadline before queueing anything. A position whose deadline has passed is logged as closed, never emailed.
+
+**b. Cold emails** (at most 1 per run, still max 3 in any rolling 7 days, counting awaiting and sent):
+- Only to the named targets in the plan (jobs #238 to #245) or a new supervisor with a genuinely matching recent paper.
+- Tie every email to that person's **recent paper or project**. Never reuse a pitch.
+- Under 200 words: subject short and specific; **first line is the ask**; then the dissertation in two or three sentences with the numbers (49% O&M cost cut, 6% availability gain, CTMC with phase-type distributions plus MPC); then one link to their work plus the API 580 RBI experience; close with CV attached and a short call offered.
+- No visa or family detail in a first email. **Follow up once after 10 working days**, then stop.
+- Best windows are October to November and February to March. Do not send during the Nordic summer.
+- Attach the tailored PhD CV plus `Xavier_Sojan_Thesis_Poster_A0.pdf`.
+
+**c. OMAE 2027 milestones** (the publication that makes the applications competitive). Flag in the summary when one is within 14 days, and treat the 24 Nov abstract deadline as hard:
+- 15 Oct 2026 email Prof. Jin Wang to co-author; 10 Nov abstract drafted; **24 Nov abstract deadline**; 1 Dec acceptance; 14 Jan 2027 full paper; 22 Mar final paper; 13 to 18 Jun 2027 conference in The Hague.
+- Once the abstract is in, add "Abstract submitted to OMAE 2027" to the PhD CV and every email.
+
+**d. Pipeline health:** target 20 to 30 applications and emails over six months, with at least 8 active items at any time. Report the count in the summary. Xavier is on wedding leave 15 Jan to 10 Feb 2027, so pause outreach then.
+
+**e. Do not** send further cold emails to NTNU (advertised posts only, per the plan).
 
 ### 9. Wrap up and summary email to Xavier
 - Log one `other` / `done` row titled `Sweep summary`, with counts: new jobs, Easy Apply prepped, emails drafted, follow-ups drafted, PhD drafts, replies found (Gmail and LinkedIn), feed posts scanned, connection-post hits and career-site hits.
