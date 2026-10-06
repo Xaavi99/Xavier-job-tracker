@@ -129,6 +129,57 @@
   .path-banner h3{font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text)}
   .path-banner ol{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:5px}
   .path-banner li{font-size:12.5px;color:var(--muted);line-height:1.5}
+
+  /* Target companies panel (AI automation) */
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:1.25rem;overflow:hidden}
+  .panel > summary{list-style:none;cursor:pointer;padding:1rem 1.25rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .panel > summary::-webkit-details-marker{display:none}
+  .panel > summary::before{content:'▸';color:var(--muted);font-size:11px;transition:transform .15s}
+  .panel[open] > summary::before{transform:rotate(90deg)}
+  .panel-title{font-size:13px;font-weight:500;color:var(--text)}
+  .panel-note{font-size:12px;color:var(--muted);flex:1 1 100%;line-height:1.5;margin-top:2px}
+  .panel-body{padding:0 1.25rem 1.1rem}
+  .tc-group{margin-top:14px}
+  .tc-group > h4{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:8px;display:flex;gap:8px;align-items:baseline}
+  .tc-group > h4 span{font-weight:400;letter-spacing:0;text-transform:none}
+  .tc-row{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:9px 0;border-bottom:1px solid var(--border)}
+  .tc-row:last-child{border-bottom:none}
+  .tc-name{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .tc-what{font-size:12px;color:var(--muted);line-height:1.5;margin-top:3px}
+  .tc-meta{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.6}
+  .tc-meta b{color:var(--text);font-weight:500}
+  .tc-chip{font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+  .tc-pri-A{background:rgba(255,138,76,0.14);color:var(--accent);border-color:rgba(255,138,76,0.3)}
+  .tc-pri-B{background:rgba(184,157,255,0.13);color:var(--purple);border-color:rgba(184,157,255,0.28)}
+  .tc-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .tc-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .tc-links a{font-size:11.5px;color:var(--accent);text-decoration:none;white-space:nowrap}
+  .tc-links a:hover{text-decoration:underline}
+  .s-tc-to_contact{background:rgba(255,138,76,0.14);color:var(--accent);border-color:rgba(255,138,76,0.3)}
+  .s-tc-contacted{background:rgba(184,157,255,0.13);color:var(--purple);border-color:rgba(184,157,255,0.28)}
+  .s-tc-replied,.s-tc-applied{background:rgba(94,214,158,0.13);color:var(--green);border-color:rgba(94,214,158,0.3)}
+  .s-tc-not_now{background:rgba(136,136,144,0.1);color:var(--muted)}
+  @media(max-width:700px){.tc-row{grid-template-columns:1fr}.tc-actions{align-items:flex-start}.tc-links{justify-content:flex-start}}
+
+  /* PhD strategy panel */
+  .phd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+  .phd-card{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;background:var(--bg)}
+  .phd-card h5{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .phd-card ul{margin:0;padding-left:1rem;display:flex;flex-direction:column;gap:5px}
+  .phd-card li{font-size:12px;color:var(--muted);line-height:1.5}
+  .phd-card li b{color:var(--text);font-weight:500}
+  .phd-card a{color:var(--accent);text-decoration:none}
+  .phd-card a:hover{text-decoration:underline}
+  .phd-next{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:12.5px;color:var(--muted);
+    background:rgba(255,138,76,0.1);border:1px solid rgba(255,138,76,0.3);border-radius:var(--radius);padding:9px 12px;margin-top:12px}
+  .phd-next b{color:var(--accent);font-weight:600}
+  .phd-ms{display:flex;gap:9px;align-items:baseline;font-size:12px;color:var(--muted);padding:5px 0;line-height:1.5}
+  .phd-ms .d{font-variant-numeric:tabular-nums;color:var(--text);font-weight:500;white-space:nowrap;min-width:74px}
+  .phd-ms.done .d,.phd-ms.done span{opacity:.45;text-decoration:line-through}
+  .phd-ms.soon .d{color:var(--accent)}
+  .phd-check{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);padding:4px 0;cursor:pointer;line-height:1.5}
+  .phd-check input{margin-top:2px;accent-color:var(--accent);cursor:pointer}
   .course-category{margin-bottom:1.75rem}
   .course-category h2{font-family:var(--font-mono);font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
   .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
@@ -235,6 +286,15 @@
   <div class="stat"><div class="stat-label">Tier A</div><div class="stat-num" id="st-tierA">—</div></div>
   <div class="stat"><div class="stat-label">Tier B</div><div class="stat-num" id="st-tierB">—</div></div>
 </div>
+
+<details class="panel hidden" id="phd-plan-panel" open>
+  <summary>
+    <span class="panel-title">PhD strategy</span>
+    <span class="tc-chip" id="phd-plan-goal">—</span>
+    <span class="panel-note" id="phd-plan-sub"></span>
+  </summary>
+  <div class="panel-body" id="phd-plan-body"></div>
+</details>
 
 <div class="controls">
   <button class="filter-pill track-pill active" onclick="setTrack('all',this)">All tracks</button>
@@ -380,6 +440,17 @@
     <li>Run <code>/send-approved</code> in Claude Code, say yes, and everything approved is sent and logged here.</li>
   </ol>
 </div>
+
+<details class="panel" id="tc-panel" open>
+  <summary>
+    <span class="panel-title">Target companies</span>
+    <span class="tc-chip" id="tc-count">—</span>
+    <span class="panel-note">Contractors that wind farm owners hire to inspect their assets. Most advertise technician jobs, so the way in is an inspection engineer, co-ordinator, data or trainee role, or a speculative CV. Set a status as you work through them.</span>
+  </summary>
+  <div class="panel-body" id="tc-body">
+    <div class="loading">Loading target companies…</div>
+  </div>
+</details>
 
 <div class="controls">
   <button class="filter-pill log-status-pill active" onclick="setLogStatus('all',this)">All</button>
@@ -548,6 +619,7 @@ function applyProfileBranding(p) {
   Object.entries(VIEW_IDS).forEach(([k, id]) => document.getElementById(id).classList.toggle('hidden', k !== kind));
   document.getElementById('btn-add-role').classList.toggle('hidden', kind !== 'jobs');
   document.getElementById('btn-export').classList.toggle('hidden', kind !== 'jobs');
+  renderPhdPlan();
 }
 let currentFilter = 'all';
 let currentTrack = 'all';
@@ -865,6 +937,7 @@ function chooseProfile(p) {
     if (jobs.length === 0) loadJobs().then(renderHot); else renderHot();
   } else if (kind === 'automation') {
     loadAutomation();
+    if (targetCompanies.length === 0) loadTargetCompanies(); else renderTargetCompanies();
   } else {
     if (jobs.length === 0) loadJobs(); else render();
   }
@@ -1459,6 +1532,181 @@ async function loadAutomation() {
     document.getElementById('log-list').innerHTML = '<div class="loading">Could not load the automation log.</div>';
     showToast('Could not load automation log', true);
   }
+}
+
+// ── TARGET COMPANIES (offshore wind inspection contractors) ───────────────────
+let targetCompanies = [];
+const TC_STATUSES = ['to_contact', 'contacted', 'replied', 'applied', 'not_now'];
+const TC_STATUS_LABELS = { to_contact: 'to contact', contacted: 'contacted', replied: 'replied', applied: 'applied', not_now: 'not now' };
+
+async function loadTargetCompanies() {
+  try {
+    targetCompanies = await sbFetch('target_companies?select=*&order=sort_order.asc') || [];
+    renderTargetCompanies();
+  } catch (e) {
+    document.getElementById('tc-body').innerHTML = '<div class="loading">Could not load target companies.</div>';
+  }
+}
+
+async function setTargetStatus(id, status) {
+  const c = targetCompanies.find(x => x.id === id);
+  if (!c || c.status === status) return;
+  const prev = c.status;
+  c.status = status;
+  renderTargetCompanies();
+  try {
+    await sbFetch('target_companies?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ status, updated_at: new Date().toISOString() }) });
+    showToast(c.name + ': ' + TC_STATUS_LABELS[status]);
+  } catch (e) {
+    c.status = prev;
+    renderTargetCompanies();
+    showToast('Could not update status', true);
+  }
+}
+
+function renderTargetCompanies() {
+  const body = document.getElementById('tc-body');
+  if (!body) return;
+  if (targetCompanies.length === 0) {
+    body.innerHTML = '<div class="loading">No target companies yet.</div>';
+    return;
+  }
+  const open = targetCompanies.filter(c => c.status === 'to_contact').length;
+  document.getElementById('tc-count').textContent = targetCompanies.length + ' companies · ' + open + ' to contact';
+  const groups = {};
+  targetCompanies.forEach(c => (groups[c.category] = groups[c.category] || []).push(c));
+  body.innerHTML = Object.entries(groups).map(([cat, items]) => `
+    <div class="tc-group">
+      <h4>${esc(cat)} <span>${items.length}</span></h4>
+      ${items.map(c => `
+        <div class="tc-row">
+          <div>
+            <div class="tc-name">
+              ${esc(c.name)}
+              <span class="tc-chip tc-pri-${esc(c.priority)}">${c.priority === 'A' ? 'start here' : c.priority === 'B' ? 'worth it' : 'watch'}</span>
+              ${c.uk_base ? `<span class="tc-chip">${esc(c.uk_base)}</span>` : ''}
+            </div>
+            <div class="tc-what">${esc(c.what_they_do || '')}</div>
+            ${c.owners ? `<div class="tc-meta"><b>Works for:</b> ${esc(c.owners)}</div>` : ''}
+            ${c.route_in ? `<div class="tc-meta"><b>Way in:</b> ${esc(c.route_in)}</div>` : ''}
+          </div>
+          <div class="tc-actions">
+            <select class="status-pill s-tc-${esc(c.status)}" onchange="setTargetStatus(${c.id}, this.value)" title="Where you are with them">
+              ${TC_STATUSES.map(s => `<option value="${s}"${s === c.status ? ' selected' : ''}>${TC_STATUS_LABELS[s]}</option>`).join('')}
+            </select>
+            <div class="tc-links">
+              ${c.contact ? `<a href="mailto:${esc(c.contact)}">email</a>` : ''}
+              ${c.website ? `<a href="${esc(c.website)}" target="_blank" rel="noopener">careers</a>` : ''}
+              ${c.job_id ? `<a href="#" onclick="openMaterials(${c.job_id});return false">job #${c.job_id}</a>` : ''}
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── PhD STRATEGY (from Xavier_PhD_Plan.md, 6 Oct 2026) ────────────────────────
+const PHD_PLAN = {
+  goal: 'Funded PhD in the Netherlands or Denmark, starting 2027',
+  sub: 'A funded PhD there is a paid job: salary instead of fees (TU Delft about EUR 3,059 to 3,881 a month), family can join, and Shamna can work without restriction. Advertised positions are now the main channel; cold emails are secondary and must be tied to a recent paper.',
+  milestones: [
+    ['2026-10-15', 'Email Prof. Jin Wang (LJMU) asking him to co-author the OMAE paper'],
+    ['2026-11-10', 'OMAE abstract drafted and reviewed by Jin Wang'],
+    ['2026-11-24', 'OMAE 2027 abstract deadline (hard date)'],
+    ['2026-12-01', 'OMAE acceptance notification'],
+    ['2027-01-14', 'OMAE full paper submission'],
+    ['2027-01-15', 'Wedding leave starts, paper submitted before leaving'],
+    ['2027-02-10', 'Back from leave: new funding rounds, apply heavily'],
+    ['2027-03-22', 'OMAE final paper'],
+    ['2027-06-13', 'Present at OMAE, The Hague, and meet TU Delft researchers'],
+    ['2027-09-01', 'Target PhD start']
+  ],
+  boards: [
+    ['TU Delft careers', 'https://www.tudelft.nl/en/about-tu-delft/working-at-tu-delft/search-jobs'],
+    ['AcademicTransfer (NL)', 'https://www.academictransfer.com/en/jobs/?q=offshore%20wind'],
+    ['DTU job portal', 'https://www.dtu.dk/english/about/job-and-career/vacant-positions'],
+    ['Aalborg University vacancies', 'https://www.vacancies.aau.dk/phd-positions/'],
+    ['EURAXESS', 'https://euraxess.ec.europa.eu/jobs/search?keywords=offshore%20wind%20PhD']
+  ],
+  emailRules: [
+    'Subject: short and specific, e.g. "PhD enquiry: health monitoring of floating wind turbines"',
+    'First line is the ask: are positions opening, or is there a project to join',
+    'Then the dissertation in two or three sentences, with the numbers',
+    'Then one link to their recent paper or project, plus the RBI experience',
+    'Close with CV attached and a short call offered. Under 200 words',
+    'Follow up once after 10 working days, then move on. No visa or family in a first email'
+  ],
+  sellingPoints: [
+    'Dissertation: predictive maintenance for a 15 MW spar floating turbine, CTMC with phase-type distributions plus MPC. 49% O&M cost cut, 6% availability gain',
+    '3 years 5 months as an integrity engineer at a BPCL refinery (TCS): API 580 RBI with UT, RT and MPI results',
+    'Python, MATLAB, Abaqus, Power BI and APM software',
+    'The angle: an inspection and RBI view from real plant data, which most applicants straight from a master\'s do not have'
+  ],
+  docs: [
+    'Research CV (2 pages, London address, add the OMAE line once submitted)',
+    'One-page dissertation summary with a figure',
+    'Research statement (1 to 2 pages), adapted per position',
+    'MSc and B.Tech transcripts and certificates',
+    'English test result, if required',
+    'Two referees confirmed (Prof. Jin Wang plus one from TCS or BPCL)'
+  ],
+  rules: [
+    'Apply to every advertised post that fits 70% or more. Do not wait for a perfect match',
+    'Aim for 20 to 30 applications and emails over six months',
+    'Best email windows: October to November and February to March. Avoid the Nordic summer',
+    'Review the pipeline every Sunday. A healthy pipeline has at least 8 active items'
+  ]
+};
+
+function renderPhdPlan() {
+  const panel = document.getElementById('phd-plan-panel');
+  if (!panel) return;
+  const show = currentProfile === 'phd';
+  panel.classList.toggle('hidden', !show);
+  if (!show) return;
+  document.getElementById('phd-plan-goal').textContent = PHD_PLAN.goal;
+  document.getElementById('phd-plan-sub').textContent = PHD_PLAN.sub;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const fmt = d => new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const next = PHD_PLAN.milestones.find(([d]) => new Date(d) >= today);
+  const days = next ? Math.round((new Date(next[0]) - today) / 86400000) : null;
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('phdDocs') || '{}'); } catch (e) { saved = {}; }
+  document.getElementById('phd-plan-body').innerHTML = `
+    ${next ? `<div class="phd-next"><b>Next: ${esc(next[1])}</b><span>${fmt(next[0])} · ${days === 0 ? 'today' : days === 1 ? 'tomorrow' : 'in ' + days + ' days'}</span></div>` : ''}
+    <div class="phd-grid">
+      <div class="phd-card">
+        <h5>Timeline to the PhD start</h5>
+        ${PHD_PLAN.milestones.map(([d, t]) => {
+          const dd = new Date(d), diff = Math.round((dd - today) / 86400000);
+          return `<div class="phd-ms ${diff < 0 ? 'done' : diff <= 30 ? 'soon' : ''}"><span class="d">${fmt(d)}</span><span>${esc(t)}</span></div>`;
+        }).join('')}
+      </div>
+      <div class="phd-card">
+        <h5>Check these every week</h5>
+        <ul>${PHD_PLAN.boards.map(([n, u]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('')}</ul>
+        <h5 style="margin-top:14px">Rules</h5>
+        <ul>${PHD_PLAN.rules.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      </div>
+      <div class="phd-card">
+        <h5>How to write the emails</h5>
+        <ul>${PHD_PLAN.emailRules.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      </div>
+      <div class="phd-card">
+        <h5>Lead with these</h5>
+        <ul>${PHD_PLAN.sellingPoints.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+      </div>
+      <div class="phd-card">
+        <h5>Documents to have ready</h5>
+        ${PHD_PLAN.docs.map((d, i) => `<label class="phd-check"><input type="checkbox" ${saved['d' + i] ? 'checked' : ''} onchange="togglePhdDoc(${i}, this.checked)"><span>${esc(d)}</span></label>`).join('')}
+      </div>
+    </div>`;
+}
+
+function togglePhdDoc(i, on) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('phdDocs') || '{}'); } catch (e) { saved = {}; }
+  saved['d' + i] = on;
+  try { localStorage.setItem('phdDocs', JSON.stringify(saved)); } catch (e) { /* private mode */ }
 }
 
 async function logActivity(entry) {

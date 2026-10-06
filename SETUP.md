@@ -111,6 +111,48 @@ grant select, insert, update, delete on public.applications to anon, authenticat
 grant usage, select on all sequences in schema public to anon, authenticated, service_role;
 ```
 
+## 5c. Target companies table (offshore wind inspection contractors)
+
+SQL Editor → run. Backs the **Target companies** panel in the AI Automation view: the contractors that wind farm owners hire to inspect their assets, grouped by discipline, each with a status Xavier moves along as he works through them.
+
+```sql
+create table if not exists public.target_companies (
+  id bigint generated always as identity primary key,
+  name text not null,
+  category text not null,          -- e.g. 'Subsea ROV and IMR', 'Topside and statutory'
+  what_they_do text,
+  uk_base text,
+  owners text,                     -- which wind farm owners they contract to
+  route_in text,
+  contact text,                    -- speculative application email
+  website text,
+  priority text not null default 'B',       -- A start here / B worth it / C watch
+  status text not null default 'to_contact',-- to_contact, contacted, replied, applied, not_now
+  job_id bigint references jobs(id) on delete set null,
+  notes text,
+  profile text not null default 'uk',
+  sort_order int not null default 100,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table public.target_companies enable row level security;
+
+create policy "Authenticated read" on public.target_companies
+  for select using (auth.role() = 'authenticated');
+create policy "Authenticated insert" on public.target_companies
+  for insert with check (auth.role() = 'authenticated');
+create policy "Authenticated update" on public.target_companies
+  for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+create policy "Authenticated delete" on public.target_companies
+  for delete using (auth.role() = 'authenticated');
+
+grant select, insert, update, delete on public.target_companies to anon, authenticated, service_role;
+grant usage, select on all sequences in schema public to anon, authenticated, service_role;
+```
+
+Seeded 6 Oct 2026 with 37 contractors from `applications/_research-offshore-wind-inspection-contractors.md` (subsea ROV and IMR, subsea NDT and corrosion, topside and statutory, blades and drone, survey and inspection data, floating wind mooring and cable). The PhD strategy panel in the jobs view is driven by the `PHD_PLAN` object in `index.html`, rebuilt from `Xavier_PhD_Plan.md` (6 Oct 2026).
+
 ## 4b. Multiple profiles (separate job trackers per person)
 
 Still in SQL Editor — adds a `profile` column so more than one person's tracked jobs/applications can share this one Supabase project without mixing lists. `not null default 'xavier'` backfilled every existing row to `xavier` automatically at the time; a new profile's list starts genuinely empty until rows get inserted tagged with its name. **2026-08-28: the `xavier` profile was renamed to `uk`** (all existing `jobs`/`applications` rows updated, and the column default changed to `'uk'` via `alter table jobs alter column profile set default 'uk'` / same for `applications`) — `europe` was also split out as its own profile from what used to be `xavier`'s `europe` track, and `graduate-roles` added as a new profile. See `profile/uk/background.md`, `profile/europe/background.md`, `profile/graduate-roles/background.md`.
