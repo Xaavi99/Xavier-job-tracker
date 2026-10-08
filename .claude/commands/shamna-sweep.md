@@ -14,7 +14,7 @@ The same engine as `/daily-sweep`, run for **Shamna K** instead of Xavier. Read 
 4. Her contact details: kshamna16@gmail.com, +91 9961888180, Kasaragod, Kerala. Never use Xavier's details on her material. Her Gmail (kshamna16@gmail.com) is the account to read and send from; never read Xavier's inbox for her sweep, and never send her applications from his address.
 5. Avoid duplicates: check `jobs` by link or company plus role, filtered to `profile=eq.shamna`, before adding.
 6. **Per-run caps:** at most 5 new jobs, 3 application preps and 2 recruiter emails.
-7. Tag every row with `profile='shamna'` and `track='industry'`. Her automation shows in the tracker's **Shamna, AI Automation** view, which reads `automation_log` rows with that profile.
+7. Tag every row with `profile='shamna'` and `track='industry'`. She has two views of her own on the tracker's front page: **Shamna, Hot Jobs** (`jobs` rows with `profile='shamna'` and `hot=true`, the ones she must apply to herself) and **Shamna, AI Automation** (`automation_log` rows with that profile). Both are scoped by profile, so a mis-tagged row shows up in Xavier's views instead of hers.
 
 ## Who she is, in one line
 
@@ -40,7 +40,9 @@ If either check fails, switch device and re-check. Never draft or send from the 
 
 **Switch back to Xavier's browser when the sweep ends.**
 
-**Her LinkedIn state (8 Oct 2026):** Open to Work set to **Recruiters only**, Kasaragod, on-site, hybrid and remote. 15 message threads. 34 pending invitations, several from integrity and static-equipment people worth accepting.
+**Her LinkedIn state (8 Oct 2026):** Open to Work is **Recruiters only** (keep it that way, she is employed), locations **India, United Arab Emirates, Saudi Arabia, Qatar, Oman**, all three of on-site, hybrid and remote, start date "immediately, actively applying", notice period 30 days, expected salary 10+ lakhs. Five locations is LinkedIn's maximum, so that list is the whole of "everywhere" it will hold; anything outside it is covered by searching directly rather than by her preferences. She is **based in India** right now. 15 message threads. 34 pending invitations, several from integrity and static-equipment people worth accepting.
+
+Her Open to Work **job titles** are still Mechanical Engineer, Mechanical Design Engineer, Mechanical Supervisor, Safety Officer and Safety Engineer, none of which is the work she does. That is queued for Xavier's approval, not changed. Until it is fixed, assume LinkedIn's own recommendations for her are poorly targeted and rely on explicit searches.
 
 **Her Gmail is live and worth reading every run:** about 50 job-related emails in the last 14 days. Expect LinkedIn job alerts and application confirmations, Indeed and Naukri alerts, and real replies from employers. Applications already in flight as of 8 Oct: **Oceaneering (Pipeline Integrity Engineer)**, **UptimeAI**, **Jobgether**. Treat replies to those as the top priority of any sweep: log them, update the matching `jobs` row, and draft a reply for approval if one is needed.
 
@@ -71,9 +73,25 @@ Where to look:
 Screen honestly: skip roles needing 10+ years, a licence or language she does not have, or a different discipline. For each fit, add a `jobs` row with tier, honest gap notes and `apply_url`, and log `job_found`.
 
 ### 3. Prepare applications
-For each strong fit, tailor a CV from `profile/shamna/cv.md` using the requirement-map and placeholder method in `tailor-application.md` (steps 1b and 7): JD requirement map, Key Qualifications block answering the knockouts, `==[CONFIRM: ...]==` placeholders for anything only she can confirm, ATS score, one honest revision pass under 80.
 
-Build with `python ../tools/build_cv.py <md> <docx>` then LibreOffice to PDF. File names: `Shamna_K_CV_<Company>_<Role>.docx/.pdf`. Final builds use `--final`, which refuses to build while a placeholder remains. Save to `applications` with `profile='shamna'`.
+**Use Xavier's CV algorithm unchanged.** `tailor-application.md` is the single source of truth for how a CV gets built, for both of them. The only differences are the source files and the contact details: read `profile/shamna/cv.md`, `profile/shamna/background.md` and `profile/shamna/voice-notes.md` where that file says `profile/$PROFILE/...`. Nothing else about the method changes, and no shortcut version of it exists for her.
+
+Run it end to end for each strong fit:
+
+1. **Requirement map** (`tailor-application.md` step 1b): pull the knockouts, preferred items, keywords and motivators out of the JD into a table. Every knockout ends the run as evidenced, a placeholder, or an explicitly flagged honest gap. Run the same 3-month date-gap check on her CV.
+2. **Tailor** (step 2): headline line uses the JD's exact job title, header line states her location and work rights, and a **Key Qualifications** block answers the knockouts in the JD's own order when there are 2 or more. Keywords worked in only where they are honestly true of her experience. No fabrication: she holds API 580 and NEBOSH IGC, so write them as held.
+3. **Placeholders**: `==[CONFIRM|DATE|DETAIL|GAP|CHECK: ...]==` for anything only she can answer (notice period, current CTC, exact dates, willingness to relocate to a specific city). They build as yellow highlights in the draft.
+4. **ATS score** (step 3): keywords 60, structure 20, mandatory 20, with each knockout costing 0 if evidenced, 5 on an unresolved placeholder and 10 as an honest gap. Store `ats_score` and `ats_notes` on the `applications` row.
+5. **One honest revision pass** if the score is under 80 (step 4), then re-score. Once only. Never close a gap by inventing something.
+6. **Report and resolve** (steps 6 and 7): give Xavier the knockout lines and a numbered **Items to confirm** list so he can get the answers from her, then resolve them and re-score.
+
+Build with `python ../tools/build_cv.py <md> <docx>` then LibreOffice to PDF, and cover letters with `python ../tools/build_letter.py <md> <docx> "<recipient>"`. File names: `Shamna_K_CV_<Company>_<Role>.docx/.pdf`. Final builds use `--final`, which refuses to build while a placeholder remains. Check the finished PDF has no yellow highlight left in it. Save to `applications` with `profile='shamna'`.
+
+**Where each prepared role goes.** This is the split that decides whether she sees it in Hot Jobs or in the automation log:
+
+- **No Easy Apply** (company portal, Naukri, foundit, email application, referral): set `hot=true` on the `jobs` row with `hot_reason` and `action_needed` naming exactly what she has to do and which CV to use. It appears in the tracker's **Shamna, Hot Jobs** view. These are hers to submit; never submit them.
+- **LinkedIn Easy Apply**: queue it in `automation_log` as `easy_apply` / `awaiting_approval` with the CV path in `payload`, and leave `hot` false. It is submitted only after Xavier approves, with that job's own tailored CV uploaded, never a generic one.
+- Either way, if a deadline is inside 14 days, say so in `hot_reason` or the queued row.
 
 **Lead with:** API 580 certification (held, not in progress), the full RBI cycle she ran end to end as the RBI Optimization Project, Meridium Integrity module implementation at BPCL, and corrosion trend and thickness monitoring on DHDT and SRU pipelines.
 

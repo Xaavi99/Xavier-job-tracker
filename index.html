@@ -111,6 +111,16 @@
   .profile-card:hover .profile-avatar{border-color:var(--accent);transform:scale(1.04)}
   .profile-card span{font-size:13px}
   .profile-card:hover span{color:var(--text)}
+  .profile-group{display:flex;flex-direction:column;align-items:center;gap:1rem}
+  .profile-group-label{font-size:11px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.07em}
+  .profile-grid.focus .profile-avatar{border-color:var(--accent);background:var(--surface)}
+  .profile-grid.compact .profile-avatar{width:56px;height:56px;border-radius:var(--radius);font-size:20px}
+  .profile-grid.compact .profile-card span{font-size:12px}
+  .profile-grid.compact{gap:1rem}
+  .profile-badge{font-size:10px;font-family:var(--font-mono);letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+  .profile-badge.live{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .profile-person{font-size:10px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.07em}
+  .profile-sep{width:160px;height:1px;background:var(--border2)}
   .hidden{display:none !important}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:300;padding:2rem}
   .modal-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:720px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
@@ -246,8 +256,15 @@
 
 <div class="profile-screen hidden" id="profile-screen">
   <div class="profile-screen-inner">
-    <h2>Who's using this?</h2>
-    <div class="profile-grid" id="profile-grid"></div>
+    <div class="profile-group">
+      <h2>What needs you today</h2>
+      <div class="profile-grid focus" id="profile-grid-focus"></div>
+    </div>
+    <div class="profile-sep"></div>
+    <div class="profile-group">
+      <div class="profile-group-label">Full trackers</div>
+      <div class="profile-grid compact" id="profile-grid-trackers"></div>
+    </div>
   </div>
 </div>
 
@@ -408,14 +425,7 @@
   <div class="stat"><div class="stat-label">Materials ready</div><div class="stat-num" id="h-st-mat">—</div></div>
 </div>
 
-<div class="path-banner">
-  <h3>How this works</h3>
-  <ol>
-    <li>Roles I recommend that need you: external applications, referrals, deadlines, or a decision only you can make.</li>
-    <li>Open the materials to grab the tailored CV and cover letter, then apply on the employer's site.</li>
-    <li>Click "Mark applied" when done. It moves to Applied and leaves this list.</li>
-  </ol>
-</div>
+<div class="path-banner" id="hot-how"></div>
 
 <div id="hot-list">
   <div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div>
@@ -432,14 +442,7 @@
   <div class="stat"><div class="stat-label">Applications submitted</div><div class="stat-num" id="a-st-apps">—</div></div>
 </div>
 
-<div class="path-banner">
-  <h3>AI automation</h3>
-  <ol>
-    <li>Every 6 hours Claude runs <code>/daily-sweep</code>: checks LinkedIn messages and feed, Easy Apply roles, Gmail replies, and PhD supervisors. It drafts emails and prepares applications.</li>
-    <li>Anything that would send or submit is queued here as <b>Awaiting approval</b>. Nothing goes out without you.</li>
-    <li>Run <code>/send-approved</code> in Claude Code, say yes, and everything approved is sent and logged here.</li>
-  </ol>
-</div>
+<div class="path-banner" id="auto-how"></div>
 
 <details class="panel" id="tc-panel" open>
   <summary>
@@ -577,33 +580,101 @@ let jobs = [];
 let applicationsMap = {};
 let courses = [];
 let currentCourseStatus = 'all';
-let currentProfile = localStorage.getItem('xjt_profile') || 'uk';
+let currentProfile = localStorage.getItem('xjt_profile') || 'hot';
 // Single source of truth for the profile picker, branding, and which tracks each profile can have jobs in
 // (the track-pill row itself doesn't filter per-profile yet — `tracks` is here so that's a config change, not a rediscovery, when it does).
+// The four `group: 'focus'` profiles are the front page: what needs a decision
+// (Hot Jobs) and what the automation has queued, for each person. Everything
+// else is a full tracker you open when you want to browse rather than act.
+// `jobProfiles` scopes a hot view, `logProfiles` scopes an automation view.
 const PROFILES = [
-  { id: 'uk',             avatar: 'UK',   avatarSize: 24, label: 'Xavier — UK',            title: 'Xavier Sojan · UK',                 tab: 'UK — Job Tracker',            tracks: ['industry', 'phd'] },
-  { id: 'europe',         avatar: 'EU',   avatarSize: 18, label: 'Xavier — Europe',         title: 'Xavier Sojan · Europe',             tab: 'Europe — Job Tracker',         tracks: ['europe'] },
+  { id: 'hot',            avatar: 'HOT',  avatarSize: 20, label: 'Hot Jobs',                 title: 'Xavier Sojan · Hot Jobs',            tab: 'Hot Jobs · Action needed',      tracks: [], kind: 'hot',        group: 'focus', person: 'Xavier',  jobProfiles: ['uk', 'europe', 'graduate-roles', 'phd', 'daniel-may'] },
+  { id: 'automation',     avatar: 'AI',   avatarSize: 26, label: 'AI Automation',            title: 'Xavier Sojan · AI Automation',       tab: 'AI Automation · Activity log',  tracks: [], kind: 'automation', group: 'focus', person: 'Xavier',  logProfiles: ['uk', 'europe', 'graduate-roles', 'phd', 'daniel-may'] },
+  { id: 'shamna-hot',     avatar: 'S·HOT', avatarSize: 13, label: 'Shamna — Hot Jobs',       title: 'Shamna K · Hot Jobs',                tab: 'Shamna · Hot Jobs',             tracks: [], kind: 'hot',        group: 'focus', person: 'Shamna',  jobProfiles: ['shamna'] },
+  { id: 'shamna-automation', avatar: 'S·AI', avatarSize: 15, label: 'Shamna — AI Automation', title: 'Shamna K · AI Automation',          tab: 'Shamna · AI Automation',        tracks: [], kind: 'automation', group: 'focus', person: 'Shamna',  logProfiles: ['shamna'] },
+  { id: 'uk',             avatar: 'UK',   avatarSize: 24, label: 'Xavier — UK',              title: 'Xavier Sojan · UK',                 tab: 'UK — Job Tracker',            tracks: ['industry', 'phd'] },
+  { id: 'europe',         avatar: 'EU',   avatarSize: 18, label: 'Xavier — Europe',          title: 'Xavier Sojan · Europe',             tab: 'Europe — Job Tracker',         tracks: ['europe'] },
   { id: 'graduate-roles', avatar: 'Grad', avatarSize: 16, label: 'Xavier — Graduate Roles',  title: 'Xavier Sojan · Graduate Roles',      tab: 'Graduate Roles — Job Tracker',  tracks: ['industry'] },
-  { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna',                             tab: 'Shamna — Job Tracker',          tracks: ['industry'] },
+  { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna K · All tracked roles',       tab: 'Shamna — Job Tracker',          tracks: ['industry'] },
   { id: 'phd',            avatar: 'PhD',  avatarSize: 18, label: 'PhD Scholarships',         title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker', tracks: ['phd'] },
   { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] },
-  { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses' },
-  { id: 'hot',            avatar: 'HOT',  avatarSize: 20, label: 'Hot Jobs',                 title: 'Xavier Sojan · Hot Jobs',            tab: 'Hot Jobs · Action needed',      tracks: [], kind: 'hot' },
-  { id: 'automation',     avatar: 'AI',   avatarSize: 26, label: 'AI Automation',            title: 'Xavier Sojan · AI Automation',       tab: 'AI Automation · Activity log',  tracks: [], kind: 'automation', logProfiles: ['uk', 'europe', 'graduate-roles', 'phd'] },
-  { id: 'shamna-automation', avatar: 'S·AI', avatarSize: 15, label: 'Shamna — AI Automation', title: 'Shamna K · AI Automation',          tab: 'Shamna · AI Automation',        tracks: [], kind: 'automation', logProfiles: ['shamna'] }
+  { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses' }
 ];
 
 const VIEW_IDS = { jobs: 'jobs-view', courses: 'courses-view', hot: 'hot-view', automation: 'automation-view' };
 const VIEW_H1 = { jobs: 'Job <span>tracker</span>', courses: 'Course <span>tracker</span>', hot: 'Hot <span>jobs</span>', automation: 'AI <span>automation</span>' };
+
+// The hot list means something slightly different for each person, so the
+// explainer is per-person rather than one generic set of steps.
+const HOT_HOW = {
+  Xavier: `<h3>How this works</h3><ol>
+    <li>Roles I recommend that need you: external applications, referrals, deadlines, or a decision only you can make.</li>
+    <li>Open the materials to grab the tailored CV and cover letter, then apply on the employer's site.</li>
+    <li>Click "Mark applied" when done. It moves to Applied and leaves this list.</li></ol>`,
+  Shamna: `<h3>Shamna's manual applications</h3><ol>
+    <li>Roles with no LinkedIn Easy Apply, so someone has to fill in a company portal, Naukri or an email application. Easy Apply roles are handled in her AI automation view instead.</li>
+    <li>Every role here already has a CV tailored by the same algorithm as Xavier's: JD requirement map, Key Qualifications answering the knockouts, ATS score out of 100. Open the materials to read it.</li>
+    <li>Send it from her own address, kshamna16@gmail.com, then click "Mark applied".</li></ol>`
+};
+
+const AUTO_HOW = {
+  Xavier: `<h3>AI automation</h3><ol>
+    <li>Every 6 hours Claude runs <code>/daily-sweep</code>: checks LinkedIn messages and feed, Easy Apply roles, Gmail replies, and PhD supervisors. It drafts emails and prepares applications.</li>
+    <li>Anything that would send or submit is queued here as <b>Awaiting approval</b>. Nothing goes out without you.</li>
+    <li>Run <code>/send-approved</code> in Claude Code, say yes, and everything approved is sent and logged here.</li></ol>`,
+  Shamna: `<h3>Shamna's AI automation</h3><ol>
+    <li>Run <code>/shamna-sweep</code> in Claude Code. It works in her own Chrome profile, reads her Gmail (kshamna16@gmail.com) and her LinkedIn, searches India first and then the Gulf and worldwide, and prepares applications with the same CV algorithm used for Xavier.</li>
+    <li>Easy Apply roles and recruiter emails land here as <b>Awaiting approval</b>. Nothing is sent or submitted until you say yes in chat. Roles that need a manual application go to her <b>Hot Jobs</b> view instead.</li>
+    <li>Approve with <code>/send-approved</code>. Her material always goes out from her own address, never yours.</li></ol>`
+};
 let automationLog = [];
 let currentLogStatus = 'all';
 
+// Counts for the front page badges. Decoration only: if the fetch fails the
+// cards still work, they just show no number.
+let frontCounts = null;
+
+async function loadFrontCounts() {
+  try {
+    const [hotRows, logRows] = await Promise.all([
+      sbFetch(TABLE + '?select=id,profile,status&hot=is.true'),
+      sbFetch('automation_log?select=id,profile&status=eq.awaiting_approval')
+    ]);
+    frontCounts = { hot: hotRows || [], log: logRows || [] };
+    renderProfileGrid();
+  } catch (e) {
+    frontCounts = null;
+  }
+}
+
+function frontBadge(p) {
+  if (!frontCounts) return '';
+  if (p.kind === 'hot') {
+    const n = frontCounts.hot.filter(j => jobProfilesFor(p.id).includes(j.profile || 'uk')
+      && !CLOSED_STATUSES.includes(j.status)).length;
+    return n === 0 ? '<span class="profile-badge">all clear</span>'
+      : `<span class="profile-badge live">${n} need${n === 1 ? 's' : ''} you</span>`;
+  }
+  if (p.kind === 'automation') {
+    const n = frontCounts.log.filter(x => logProfilesFor(p.id).includes(x.profile || 'uk')).length;
+    return n === 0 ? '<span class="profile-badge">nothing queued</span>'
+      : `<span class="profile-badge live">${n} to approve</span>`;
+  }
+  return '';
+}
+
 function renderProfileGrid() {
-  document.getElementById('profile-grid').innerHTML = PROFILES.map(p => `
+  const card = (p, withBadge) => `
       <button class="profile-card" onclick="chooseProfile('${p.id}')">
         <div class="profile-avatar"${p.avatarSize ? ` style="font-size:${p.avatarSize}px"` : ''}>${esc(p.avatar)}</div>
-        <span>${esc(p.label)}</span>
-      </button>`).join('');
+        ${withBadge && p.person ? `<span class="profile-person">${esc(p.person)}</span>` : ''}
+        <span>${esc(withBadge ? p.label.replace(/^\w+ — /, '') : p.label)}</span>
+        ${withBadge ? frontBadge(p) : ''}
+      </button>`;
+  document.getElementById('profile-grid-focus').innerHTML =
+    PROFILES.filter(p => p.group === 'focus').map(p => card(p, true)).join('');
+  document.getElementById('profile-grid-trackers').innerHTML =
+    PROFILES.filter(p => p.group !== 'focus').map(p => card(p, false)).join('');
 }
 
 function profileKind(p) {
@@ -620,6 +691,11 @@ function applyProfileBranding(p) {
   Object.entries(VIEW_IDS).forEach(([k, id]) => document.getElementById(id).classList.toggle('hidden', k !== kind));
   document.getElementById('btn-add-role').classList.toggle('hidden', kind !== 'jobs');
   document.getElementById('btn-export').classList.toggle('hidden', kind !== 'jobs');
+  if (kind === 'hot') {
+    document.getElementById('hot-how').innerHTML = HOT_HOW[found.person] || HOT_HOW.Xavier;
+  } else if (kind === 'automation') {
+    document.getElementById('auto-how').innerHTML = AUTO_HOW[found.person] || AUTO_HOW.Xavier;
+  }
   renderPhdPlan();
 }
 let currentFilter = 'all';
@@ -924,6 +1000,7 @@ function showProfileScreen() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.add('hidden');
   document.getElementById('profile-screen').classList.remove('hidden');
+  loadFrontCounts();
 }
 
 function chooseProfile(p) {
@@ -1464,9 +1541,16 @@ function atsClass(score) {
   return score >= 80 ? 'ats-high' : score >= 65 ? 'ats-mid' : 'ats-low';
 }
 
+// A hot view belongs to one person: Xavier's own profiles, or Shamna's.
+function jobProfilesFor(p) {
+  const found = PROFILES.find(x => x.id === p);
+  return (found && found.jobProfiles) || [p];
+}
+
 function renderHot() {
+  const scope = jobProfilesFor(currentProfile);
   const hot = jobs
-    .filter(j => j.hot && !CLOSED_STATUSES.includes(j.status))
+    .filter(j => j.hot && !CLOSED_STATUSES.includes(j.status) && scope.includes(j.profile || 'uk'))
     .sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999')
       || ((applicationsMap[b.id]?.ats_score ?? -1) - (applicationsMap[a.id]?.ats_score ?? -1))
       || (a.tier || 'Z').localeCompare(b.tier || 'Z'));
@@ -1529,7 +1613,7 @@ const LOG_KIND_LABELS = {
 // Rows written before profiles were split (no profile set) stay with Xavier's view.
 function logProfilesFor(p) {
   const found = PROFILES.find(x => x.id === p);
-  return (found && found.logProfiles) || ['uk', 'europe', 'graduate-roles', 'phd'];
+  return (found && found.logProfiles) || ['uk', 'europe', 'graduate-roles', 'phd', 'daniel-may'];
 }
 function inCurrentLogScope(row) {
   const scope = logProfilesFor(currentProfile);
