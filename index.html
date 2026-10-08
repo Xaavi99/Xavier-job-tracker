@@ -652,7 +652,7 @@ function frontBadge(p) {
   if (!frontCounts) return '';
   if (p.kind === 'hot') {
     const n = frontCounts.hot.filter(j => jobProfilesFor(p.id).includes(j.profile || 'uk')
-      && !CLOSED_STATUSES.includes(j.status)).length;
+      && !HOT_DONE_STATUSES.includes(j.status)).length;
     return n === 0 ? '<span class="profile-badge">all clear</span>'
       : `<span class="profile-badge live">${n} need${n === 1 ? 's' : ''} you</span>`;
   }
