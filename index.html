@@ -589,7 +589,8 @@ const PROFILES = [
   { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] },
   { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses' },
   { id: 'hot',            avatar: 'HOT',  avatarSize: 20, label: 'Hot Jobs',                 title: 'Xavier Sojan · Hot Jobs',            tab: 'Hot Jobs · Action needed',      tracks: [], kind: 'hot' },
-  { id: 'automation',     avatar: 'AI',   avatarSize: 26, label: 'AI Automation',            title: 'Xavier Sojan · AI Automation',       tab: 'AI Automation · Activity log',  tracks: [], kind: 'automation' }
+  { id: 'automation',     avatar: 'AI',   avatarSize: 26, label: 'AI Automation',            title: 'Xavier Sojan · AI Automation',       tab: 'AI Automation · Activity log',  tracks: [], kind: 'automation', logProfiles: ['uk', 'europe', 'graduate-roles', 'phd'] },
+  { id: 'shamna-automation', avatar: 'S·AI', avatarSize: 15, label: 'Shamna — AI Automation', title: 'Shamna K · AI Automation',          tab: 'Shamna · AI Automation',        tracks: [], kind: 'automation', logProfiles: ['shamna'] }
 ];
 
 const VIEW_IDS = { jobs: 'jobs-view', courses: 'courses-view', hot: 'hot-view', automation: 'automation-view' };
@@ -1524,6 +1525,17 @@ const LOG_KIND_LABELS = {
   phd_outreach: 'phd outreach', profile_update: 'profile', calendar: 'calendar', other: 'other'
 };
 
+// Which automation_log / target_companies rows belong to the profile being viewed.
+// Rows written before profiles were split (no profile set) stay with Xavier's view.
+function logProfilesFor(p) {
+  const found = PROFILES.find(x => x.id === p);
+  return (found && found.logProfiles) || ['uk', 'europe', 'graduate-roles', 'phd'];
+}
+function inCurrentLogScope(row) {
+  const scope = logProfilesFor(currentProfile);
+  return scope.includes(row.profile || 'uk');
+}
+
 async function loadAutomation() {
   try {
     automationLog = await sbFetch('automation_log?select=*&order=created_at.desc&limit=500') || [];
@@ -1567,14 +1579,17 @@ async function setTargetStatus(id, status) {
 function renderTargetCompanies() {
   const body = document.getElementById('tc-body');
   if (!body) return;
-  if (targetCompanies.length === 0) {
+  const panel = document.getElementById('tc-panel');
+  const mine = targetCompanies.filter(inCurrentLogScope);
+  if (panel) panel.classList.toggle('hidden', mine.length === 0);
+  if (mine.length === 0) {
     body.innerHTML = '<div class="loading">No target companies yet.</div>';
     return;
   }
-  const open = targetCompanies.filter(c => c.status === 'to_contact').length;
-  document.getElementById('tc-count').textContent = targetCompanies.length + ' companies · ' + open + ' to contact';
+  const open = mine.filter(c => c.status === 'to_contact').length;
+  document.getElementById('tc-count').textContent = mine.length + ' companies · ' + open + ' to contact';
   const groups = {};
-  targetCompanies.forEach(c => (groups[c.category] = groups[c.category] || []).push(c));
+  mine.forEach(c => (groups[c.category] = groups[c.category] || []).push(c));
   body.innerHTML = Object.entries(groups).map(([cat, items]) => `
     <div class="tc-group">
       <h4>${esc(cat)} <span>${items.length}</span></h4>
@@ -1748,7 +1763,8 @@ function skipLogItem(id) { setLogItemStatus(id, 'skipped'); }
 
 function renderAutomation() {
   const query = document.getElementById('log-search').value.toLowerCase();
-  const filtered = automationLog.filter(x => {
+  const scoped = automationLog.filter(inCurrentLogScope);
+  const filtered = scoped.filter(x => {
     const statusMatch = currentLogStatus === 'all' || x.status === currentLogStatus;
     const searchMatch = !query || [x.title, x.recipient, x.details, x.kind].join(' ').toLowerCase().includes(query);
     return statusMatch && searchMatch;
@@ -1787,10 +1803,10 @@ function renderAutomation() {
       </div>`).join('');
   }
   const today = new Date().toDateString();
-  document.getElementById('a-st-await').textContent = automationLog.filter(x => x.status === 'awaiting_approval').length;
-  document.getElementById('a-st-today').textContent = automationLog.filter(x => ['sent', 'done'].includes(x.status) && new Date(x.created_at).toDateString() === today).length;
-  document.getElementById('a-st-emails').textContent = automationLog.filter(x => ['email', 'phd_outreach', 'linkedin_message'].includes(x.kind) && x.status === 'sent').length;
-  document.getElementById('a-st-apps').textContent = automationLog.filter(x => x.kind === 'easy_apply' && x.status === 'sent').length;
+  document.getElementById('a-st-await').textContent = scoped.filter(x => x.status === 'awaiting_approval').length;
+  document.getElementById('a-st-today').textContent = scoped.filter(x => ['sent', 'done'].includes(x.status) && new Date(x.created_at).toDateString() === today).length;
+  document.getElementById('a-st-emails').textContent = scoped.filter(x => ['email', 'phd_outreach', 'linkedin_message'].includes(x.kind) && x.status === 'sent').length;
+  document.getElementById('a-st-apps').textContent = scoped.filter(x => x.kind === 'easy_apply' && x.status === 'sent').length;
 }
 
 function showToast(msg, isError = false) {
