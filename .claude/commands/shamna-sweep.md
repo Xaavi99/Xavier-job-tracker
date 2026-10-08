@@ -20,6 +20,14 @@ The same engine as `/daily-sweep`, run for **Shamna K** instead of Xavier. Read 
 
 Asset Integrity Engineer (static equipment) at Quest Global, just under 5 years in RBI and integrity, API 580 and NEBOSH IGC certified, GE Meridium APM Integrity (TM, IM, RBI, Policy Manager), API 580/581 and 510/570, damage mechanism analysis, remaining life and fitness-for-service. She wants a **step up in scope or seniority**, not a lateral move.
 
+## Browser: use her Chrome, not Xavier's
+
+Her LinkedIn is signed in under the **iamxavierarackal@gmail.com** Chrome profile (Chrome's `Profile 1`), which has its own Claude extension connected as a second browser. Xavier's own profile (`Default`, iamxaviersojan@gmail.com) is a different browser.
+
+- Call `list_connected_browsers`, then `select_browser` with the device that is **not** the one in use for Xavier's work, and confirm by opening `linkedin.com/in/me/`: it must show **SHAMNA K, Asset Integrity Engineer at Quest Global**. If it shows Xavier, switch to the other device.
+- **Switch back to Xavier's browser when the sweep ends**, so later work does not run in her session.
+- Her LinkedIn state as of 8 Oct 2026: Open to Work is set to **Recruiters only**, Kasaragod, on-site, hybrid and remote. 34 pending invitations, several from integrity and static-equipment people worth accepting. Gmail for her account is hers, so do not read Xavier's inbox for her sweep.
+
 ## Steps
 
 ### 0. Window
