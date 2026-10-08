@@ -235,6 +235,20 @@
   .s-log-skipped{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
   .s-log-failed{background:rgba(255,90,90,0.1);color:#ff6b6b;border:1px solid rgba(255,90,90,0.25)}
   @media (max-width:860px){.log-row{grid-template-columns:44px minmax(0,1fr)}.log-row .log-kind,.log-row .status-pill{grid-column:2}}
+  /* Deterministic layout on a narrow or zoomed-in viewport, where auto-fit was leaving a stat card half off the edge */
+  @media (max-width:900px){
+    body{padding:1.25rem}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .course-grid{grid-template-columns:minmax(0,1fr)}
+    header{align-items:flex-start}
+    .controls{gap:6px}
+  }
+  @media (max-width:620px){
+    body{padding:1rem}
+    h1{font-size:22px}
+    .stats{grid-template-columns:minmax(0,1fr)}
+    .stat{min-height:0}
+  }
 </style>
 </head>
 <body>
