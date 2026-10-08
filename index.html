@@ -234,20 +234,32 @@
   .s-log-sent,.s-log-done{background:rgba(200,255,87,0.1);color:var(--accent);border:1px solid rgba(200,255,87,0.2)}
   .s-log-skipped{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
   .s-log-failed{background:rgba(255,90,90,0.1);color:#ff6b6b;border:1px solid rgba(255,90,90,0.25)}
-  @media (max-width:860px){.log-row{grid-template-columns:44px minmax(0,1fr)}.log-row .log-kind,.log-row .status-pill{grid-column:2}}
-  /* Deterministic layout on a narrow or zoomed-in viewport, where auto-fit was leaving a stat card half off the edge */
+  /* Phone and narrow-window layout. The activity log is the part that needs it most:
+     with only the kind and status pills moved into column 2, the body text was being
+     auto-placed back into the 44px time column and came out one word per line. */
   @media (max-width:900px){
     body{padding:1.25rem}
     .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
     .course-grid{grid-template-columns:minmax(0,1fr)}
     header{align-items:flex-start}
     .controls{gap:6px}
+    .search-wrap{margin-left:0;width:100%}
+    .search-input-wrap,.search-input-wrap input{width:100%}
+    .log-row{grid-template-columns:auto auto minmax(0,1fr);row-gap:8px;align-items:center;padding:12px 0}
+    .log-time{grid-column:1;padding-top:0}
+    .log-kind{grid-column:2}
+    .log-row .status-pill{grid-column:3;justify-self:start}
+    .log-row > div:last-child{grid-column:1 / -1}
+    .modal-overlay{padding:1rem}
+    .modal-card{max-height:92vh}
   }
   @media (max-width:620px){
     body{padding:1rem}
     h1{font-size:22px}
-    .stats{grid-template-columns:minmax(0,1fr)}
-    .stat{min-height:0}
+    .stat{min-height:0;padding:0.8rem 1rem}
+    .stat-num{font-size:24px}
+    .log-row{font-size:13px;column-gap:6px}
+    .panel-note{display:block;margin-left:0;margin-top:4px}
   }
 </style>
 </head>
