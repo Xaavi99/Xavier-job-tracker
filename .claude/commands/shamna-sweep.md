@@ -85,7 +85,7 @@ Run it end to end for each strong fit:
 5. **One honest revision pass** if the score is under 80 (step 4), then re-score. Once only. Never close a gap by inventing something.
 6. **Report and resolve** (steps 6 and 7): give Xavier the knockout lines and a numbered **Items to confirm** list so he can get the answers from her, then resolve them and re-score.
 
-Build with `python ../tools/build_cv.py <md> <docx>` then LibreOffice to PDF, and cover letters with `python ../tools/build_letter.py <md> <docx> "<recipient>"`. File names: `Shamna_K_CV_<Company>_<Role>.docx/.pdf`. Final builds use `--final`, which refuses to build while a placeholder remains. Check the finished PDF has no yellow highlight left in it. Save to `applications` with `profile='shamna'`.
+Build with `python ../tools/build_cv.py <md> <docx>` then LibreOffice to PDF, and cover letters with `python ../tools/build_letter.py <md> <docx> "<recipient>" --sender shamna`. **The `--sender shamna` flag is not optional:** without it the letterhead prints Xavier's name, London address, phone and email on her letter. The flag puts hers there instead. File names: `Shamna_K_CV_<Company>_<Role>.docx/.pdf`. Final builds use `--final`, which refuses to build while a placeholder remains. Check the finished PDF has no yellow highlight left in it. Save to `applications` with `profile='shamna'`.
 
 **Where each prepared role goes.** This is the split that decides whether she sees it in Hot Jobs or in the automation log:
 
