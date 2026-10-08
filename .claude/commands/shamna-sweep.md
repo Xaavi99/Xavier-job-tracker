@@ -62,7 +62,8 @@ Target titles: Asset Integrity Engineer, RBI Engineer, Mechanical Integrity Engi
 Search in this order and weight the results the same way:
 1. **Bangalore** (her current base), then **India-wide** (Mumbai, Chennai, Pune, Hyderabad, Kochi, Vadodara, Jamnagar).
 2. **Middle East** (UAE, Saudi Arabia, Qatar, Oman, Kuwait): the biggest RBI and integrity market.
-3. **Rest of Asia, UK, Europe and anywhere else** with genuine static-equipment integrity roles. Surface these, never filter them out.
+3. **Europe and the UK**, which Xavier asked for explicitly on 8 Oct. The realistic routes for an Indian national are the Netherlands highly skilled migrant permit, the German EU Blue Card, Norway's skilled worker permit and a UK Skilled Worker visa from a licensed sponsor. Employers that actually sponsor in her discipline: the certification and inspection bodies (DNV, Bureau Veritas, LRQA, TUV, Applus, Mistras), the integrity specialists (Smart AIS, Intero Integrity, Penspen), the EPCs (Wood, Worley, Fluor, Technip) and the operators with large static equipment bases (Shell, bp, INEOS, EET Fuels, OCI). **Always check sponsorship before preparing anything**, and say so in the job's notes. Skip postings written in German, Dutch or Norwegian: those roles want the language. geoIds: Netherlands 102890719, Germany 101282230, UK 101165590, Norway 103819153, Belgium 100565514.
+4. **Rest of Asia and anywhere else** with genuine static-equipment integrity roles. Surface these, never filter them out.
 
 Where to look:
 - LinkedIn jobs, logged in, by geoId: Bangalore 105214831, India 102713980, UAE 104305776, Saudi Arabia 100459316, Qatar 104170880, Oman 103619019.
@@ -96,6 +97,10 @@ Build with `python ../tools/build_cv.py <md> <docx>` then LibreOffice to PDF, an
 - Either way, if a deadline is inside 14 days, say so in `hot_reason` or the queued row.
 
 **Lead with:** API 580 certification (held, not in progress), the full RBI cycle she ran end to end as the RBI Optimization Project, Meridium Integrity module implementation at BPCL, and corrosion trend and thickness monitoring on DHDT and SRU pipelines.
+
+**Her master CV was rebuilt for ATS parsing on 8 Oct** (`profile/shamna/cv.md`). It now leads on Asset Integrity Engineer rather than Mechanical Engineer, expands every acronym on first use and uses standard section headers. It carries three `==[CONFIRM: ...]==` placeholders against her current Quest Global role, because her own CV had no duties written against it at all: a year of her most recent work is otherwise invisible to a parser. **Those three answers are the single biggest ATS win available to her.** Chase them before building anything `--final`.
+
+**Six tailored sets already exist** in `applications/shamna-*`: Oceaneering pipeline integrity (used for both requisitions), Eastman, Acuren, Quest Global fixed equipment, LRQA and Bureau Veritas. Reuse rather than rebuild when a new role matches one of those closely.
 
 ### 4. Recruiter and referral outreach
 Queue at most 2 emails or LinkedIn messages per run, each tied to a specific role or a named recruiter who handles integrity hiring in her regions (NES Fircroft, Airswift, Brunel, GulfTalent, Bayt for the Gulf; Naukri recruiters in India). Short, specific, in her voice. Never contact anyone already contacted in the last 30 days.
