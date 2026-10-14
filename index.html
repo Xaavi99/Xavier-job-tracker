@@ -289,6 +289,11 @@
     </div>
     <div class="profile-sep"></div>
     <div class="profile-group">
+      <div class="profile-group-label">Master CVs</div>
+      <div class="profile-grid compact" id="profile-grid-master"></div>
+    </div>
+    <div class="profile-sep"></div>
+    <div class="profile-group">
       <div class="profile-group-label">Full trackers</div>
       <div class="profile-grid compact" id="profile-grid-trackers"></div>
     </div>
@@ -702,6 +707,43 @@ function renderProfileGrid() {
     PROFILES.filter(p => p.group === 'focus').map(p => card(p, true)).join('');
   document.getElementById('profile-grid-trackers').innerHTML =
     PROFILES.filter(p => p.group !== 'focus').map(p => card(p, false)).join('');
+  document.getElementById('profile-grid-master').innerHTML = MASTER_CVS.map(m => `
+      <button class="profile-card" onclick="openMasterCv('${m.profile}')">
+        <div class="profile-avatar" style="font-size:16px">${esc(m.avatar)}</div>
+        <span>${esc(m.label)}</span>
+      </button>`).join('');
+}
+
+// Each person's general-purpose CV, the base every tailored CV starts from.
+// Stored as an `applications` row with no job_id and extra_content.master = true,
+// so it needs no extra table. Update it by PATCHing that row's cv_content.
+const MASTER_CVS = [
+  { profile: 'uk',     avatar: 'X·CV', label: 'Xavier — Master CV', name: 'Xavier Sojan', file: 'Xavier_Sojan_Master_CV' },
+  { profile: 'shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV' }
+];
+
+async function openMasterCv(profile) {
+  const m = MASTER_CVS.find(x => x.profile === profile);
+  let row;
+  try {
+    const rows = await sbFetch('applications?select=cv_content,created_at&job_id=is.null&profile=eq.' + profile
+      + '&extra_content->>master=eq.true&order=created_at.desc&limit=1');
+    row = rows && rows[0];
+  } catch (e) { row = null; }
+  if (!row) { showToast('No master CV saved yet for ' + m.name, true); return; }
+  modalState = {
+    job: { company: m.name, role: 'Master CV', track: 'industry' },
+    app: { cv_content: row.cv_content, cover_letter_content: '', extra_content: [] },
+    tab: 'cv',
+    masterFile: m.file
+  };
+  document.getElementById('modal-title').textContent = m.name + ' — Master CV';
+  document.getElementById('modal-ats').innerHTML =
+    `<span>General CV that every tailored application starts from. Saved ${esc(new Date(row.created_at).toLocaleDateString('en-GB'))}.</span>`;
+  document.querySelectorAll('#modal-tabs .modal-tab[data-extra]').forEach(el => el.remove());
+  document.getElementById('tab-cl').classList.add('hidden');
+  showMaterialsTab('cv');
+  document.getElementById('materials-modal').classList.remove('hidden');
 }
 
 function profileKind(p) {
@@ -870,7 +912,8 @@ async function loadApplications() {
   try {
     const rows = await sbFetch('applications?select=job_id,cv_content,cover_letter_content,ats_score,ats_notes,extra_content,created_at&order=created_at.asc');
     applicationsMap = {};
-    rows.forEach(r => { applicationsMap[r.job_id] = r; });
+    // Master CVs are application rows with no job; they open from the front page.
+    rows.forEach(r => { if (r.job_id != null) applicationsMap[r.job_id] = r; });
     renderCurrentView();
   } catch(e) {
     // applications table may not exist yet (SETUP.md step 5b not run) — materials column just omits the score
@@ -1076,6 +1119,7 @@ function openMaterials(jobId) {
   const job = jobs.find(j => j.id === jobId);
   if (!app || !job) return;
   modalState = { job, app, tab: 'cv' };
+  document.getElementById('tab-cl').classList.remove('hidden');
   document.getElementById('modal-title').textContent = job.company + ' — ' + job.role;
   document.getElementById('modal-ats').innerHTML = app.ats_score != null
     ? `<span class="score">ATS ${app.ats_score}/100</span><span>${esc(app.ats_notes || '')}</span>`
@@ -1398,6 +1442,14 @@ function downloadCurrentTab(format) {
   const info = getTabInfo(tab);
   if (!info || !info.content) { showToast('Nothing to download', true); return; }
   const slug = slugify(job.company) + '-' + slugify(job.role);
+  if (modalState.masterFile) {
+    const name = modalState.masterFile + '.' + format;
+    if (format === 'pdf') { downloadPdf(name, info.content); showToast('Downloaded PDF'); }
+    else downloadDocx(name, info.content, 'cv')
+      .then(() => showToast('Downloaded Word document'))
+      .catch(() => showToast('Download failed — try the PDF option', true));
+    return;
+  }
   if (format === 'pdf') {
     downloadPdf(slug + '-' + info.filenamePart + '.pdf', info.content);
     showToast('Downloaded PDF');
