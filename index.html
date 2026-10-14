@@ -92,7 +92,7 @@
   .loading{text-align:center;padding:4rem;color:var(--muted);font-family:var(--font-mono);font-size:12px;letter-spacing:0.05em}
   .loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;margin-bottom:12px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;font-family:var(--font-mono);color:var(--accent);opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none;z-index:100}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:10px 16px;font-size:12px;font-family:var(--font-mono);color:var(--accent);opacity:0;transform:translateY(8px);transition:all 0.2s;pointer-events:none;z-index:400}
   .toast.show{opacity:1;transform:translateY(0)}
   .toast.error-toast{color:var(--red);border-color:rgba(255,92,92,0.3)}
   .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200}
@@ -298,7 +298,30 @@
       <div class="profile-grid compact" id="profile-grid-trackers"></div>
     </div>
   </div>
+
+  <!-- Master CV viewer: front page only, separate from the job materials viewer -->
+  <div class="modal-overlay hidden" id="master-cv-modal" onclick="if(event.target===this)closeMasterCv()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="master-cv-title">Master CV</h2>
+        <button class="modal-close" onclick="closeMasterCv()">&times;</button>
+      </div>
+      <div class="modal-ats" id="master-cv-note"></div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="master-tab-cv" onclick="showMasterTab('cv')">CV</button>
+        <button class="modal-tab" id="master-tab-cl" onclick="showMasterTab('cl')">Cover letter</button>
+      </div>
+      <div class="modal-body" id="master-cv-body"></div>
+      <div class="modal-actions">
+        <button class="btn btn-accent" onclick="downloadMaster('docx')">Download .docx</button>
+        <button class="btn" onclick="downloadMaster('pdf')">Download .pdf</button>
+        <button class="btn" onclick="copyMaster()">Copy text</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <div id="app" class="hidden">
 
@@ -507,7 +530,6 @@
 
 </div>
 
-<div class="toast" id="toast"></div>
 
 <div class="modal-overlay hidden" id="materials-modal" onclick="if(event.target===this)closeMaterials()">
   <div class="modal-card">
@@ -722,6 +744,8 @@ const MASTER_CVS = [
   { profile: 'shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV',     letterFile: 'Shamna_K_Cover_Letter_General' }
 ];
 
+let masterState = null;
+
 async function openMasterCv(profile) {
   const m = MASTER_CVS.find(x => x.profile === profile);
   let row;
@@ -731,22 +755,52 @@ async function openMasterCv(profile) {
     row = rows && rows[0];
   } catch (e) { row = null; }
   if (!row) { showToast('No master CV saved yet for ' + m.name, true); return; }
-  modalState = {
-    job: { company: m.name, role: 'Master CV', track: 'industry' },
-    app: { cv_content: row.cv_content, cover_letter_content: row.cover_letter_content || '', extra_content: [] },
-    tab: 'cv',
-    masterFile: m.file,
-    masterLetterFile: m.letterFile
-  };
-  document.getElementById('modal-title').textContent = m.name + ' — Master CV';
-  document.getElementById('modal-ats').innerHTML =
+  masterState = { m, row, tab: 'cv' };
+  document.getElementById('master-cv-title').textContent = m.name + ' · Master CV';
+  document.getElementById('master-cv-note').innerHTML =
     `<span>General CV and cover letter that every tailored application starts from. Saved ${esc(new Date(row.created_at).toLocaleDateString('en-GB'))}.</span>`;
-  document.querySelectorAll('#modal-tabs .modal-tab[data-extra]').forEach(el => el.remove());
-  const clTab = document.getElementById('tab-cl');
-  clTab.textContent = 'Cover letter';
-  clTab.classList.toggle('hidden', !row.cover_letter_content);
-  showMaterialsTab('cv');
-  document.getElementById('materials-modal').classList.remove('hidden');
+  document.getElementById('master-tab-cl').classList.toggle('hidden', !row.cover_letter_content);
+  showMasterTab('cv');
+  document.getElementById('master-cv-modal').classList.remove('hidden');
+}
+
+function closeMasterCv() {
+  document.getElementById('master-cv-modal').classList.add('hidden');
+  masterState = null;
+}
+
+function showMasterTab(tab) {
+  if (!masterState) return;
+  masterState.tab = tab;
+  ['cv', 'cl'].forEach(t => document.getElementById('master-tab-' + t).classList.toggle('active', t === tab));
+  document.getElementById('master-cv-body').textContent = masterContent() || '(empty)';
+}
+
+function masterContent() {
+  const { row, tab } = masterState;
+  return tab === 'cl' ? row.cover_letter_content : row.cv_content;
+}
+
+function downloadMaster(format) {
+  if (!masterState) return;
+  const content = masterContent();
+  if (!content) { showToast('Nothing to download', true); return; }
+  const { m, tab } = masterState;
+  const name = (tab === 'cl' ? m.letterFile : m.file) + '.' + format;
+  if (format === 'pdf') { downloadPdf(name, content); showToast('Downloaded PDF'); }
+  else downloadDocx(name, content, tab === 'cl' ? 'letter' : 'cv')
+    .then(() => showToast('Downloaded Word document'))
+    .catch(() => showToast('Download failed, try the PDF option', true));
+}
+
+async function copyMaster() {
+  if (!masterState) return;
+  try {
+    await navigator.clipboard.writeText(masterContent() || '');
+    showToast('Copied to clipboard');
+  } catch (e) {
+    showToast('Copy failed, select and copy manually', true);
+  }
 }
 
 function profileKind(p) {
@@ -1154,6 +1208,7 @@ function closeMaterials() {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modalState) closeMaterials();
+  if (e.key === 'Escape' && masterState) closeMasterCv();
   if (e.key === 'Escape' && !document.getElementById('add-role-modal').classList.contains('hidden')) closeAddRoleModal();
 });
 
@@ -1447,15 +1502,6 @@ function downloadCurrentTab(format) {
   const info = getTabInfo(tab);
   if (!info || !info.content) { showToast('Nothing to download', true); return; }
   const slug = slugify(job.company) + '-' + slugify(job.role);
-  if (modalState.masterFile) {
-    const base = tab === 'cl' ? modalState.masterLetterFile : modalState.masterFile;
-    const name = base + '.' + format;
-    if (format === 'pdf') { downloadPdf(name, info.content); showToast('Downloaded PDF'); }
-    else downloadDocx(name, info.content, info.docxKind)
-      .then(() => showToast('Downloaded Word document'))
-      .catch(() => showToast('Download failed — try the PDF option', true));
-    return;
-  }
   if (format === 'pdf') {
     downloadPdf(slug + '-' + info.filenamePart + '.pdf', info.content);
     showToast('Downloaded PDF');
