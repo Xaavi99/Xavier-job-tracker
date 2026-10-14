@@ -1442,22 +1442,42 @@ function downloadPdf(filename, markdown) {
     if (y + extra > pageBottom) { doc.addPage(); y = 56; }
   }
 
+  // Wraps words into lines, then draws each line as whole strings (one per
+  // bold/normal stretch) with the spaces inside them. Drawing word by word left
+  // no real spaces in the PDF, so ATS parsers and copy-paste read "Texas.Before".
   function renderRuns(runs, x, fontSize) {
     doc.setFontSize(fontSize);
-    let cursorX = x;
+    const widthOf = (text, bold) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); return doc.getTextWidth(text); };
+    const lines = [[]];
+    let lineWidth = 0;
     for (const r of runs) {
-      doc.setFont('helvetica', r.bold ? 'bold' : 'normal');
-      const words = r.text.split(/(\s+)/);
-      for (const w of words) {
+      for (const w of r.text.split(/(\s+)/)) {
         if (w === '') continue;
-        const wWidth = doc.getTextWidth(w);
-        if (cursorX + wWidth > marginX + maxWidth && w.trim() !== '') {
-          y += lineHeight; ensureSpace(lineHeight); cursorX = x;
-        }
-        if (w.trim() !== '' || cursorX > x) doc.text(w, cursorX, y);
-        cursorX += wWidth;
+        const isSpace = w.trim() === '';
+        const tok = { text: isSpace ? ' ' : w, bold: r.bold };
+        const wWidth = widthOf(tok.text, tok.bold);
+        const line = lines[lines.length - 1];
+        if (isSpace) { if (line.length) { line.push(tok); lineWidth += wWidth; } continue; }
+        if (line.length && x + lineWidth + wWidth > marginX + maxWidth) {
+          while (line.length && line[line.length - 1].text === ' ') line.pop();
+          lines.push([tok]); lineWidth = wWidth;
+        } else { line.push(tok); lineWidth += wWidth; }
       }
     }
+    lines.forEach((line, i) => {
+      if (i > 0) { y += lineHeight; ensureSpace(lineHeight); }
+      const segs = [];
+      for (const t of line) {
+        const last = segs[segs.length - 1];
+        if (last && last.bold === t.bold) last.text += t.text; else segs.push({ text: t.text, bold: t.bold });
+      }
+      let cursorX = x;
+      for (const sg of segs) {
+        doc.setFont('helvetica', sg.bold ? 'bold' : 'normal');
+        doc.text(sg.text, cursorX, y);
+        cursorX += doc.getTextWidth(sg.text);
+      }
+    });
     y += lineHeight;
   }
 
