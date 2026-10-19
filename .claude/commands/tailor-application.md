@@ -12,6 +12,8 @@ Generate tailored application materials for one job from the active profile's tr
 - **ATS-parseable.** Standard section headers (Profile/Experience/Education/Skills, not creative labels), no tables/columns/graphics, dates in a consistent format, acronyms spelled out at least once (e.g. "Risk-Based Inspection (RBI)"), JD keywords mirrored verbatim wherever they honestly match the profile's real experience.
 - **Placeholders, not omissions or guesses.** When the JD needs a fact only the user can supply or confirm (licence, certificate expiry, availability date, a gap explanation, the official name of a course), write a highlighted placeholder instead of dropping it or guessing: `==[CONFIRM: ...]==` (requirement the CV doesn't state and claiming it would be risky), `==[DATE: ...]==` (a needed date or expiry), `==[DETAIL: ...]==` (a real fact missing the specifics a recruiter expects), `==[GAP: Mon YYYY to Mon YYYY, ...]==` (a gap of 3+ months between roles), `==[CHECK: ...]==` (a term or certificate name that can't be verified). The sentence must still read correctly once the placeholder is resolved. Use the same placeholder text in the CV and cover letter, so one answer fixes both. A placeholder is never a way to sneak in a claim: if the profile clearly lacks something (e.g. CSWIP 3.4U, Dutch), it stays an honest gap, not a CONFIRM.
 - **UK conventions.** No photo, declaration, signature, date of birth or "References available on request" line. Named academic referees are fine as a plain line ("Referees: Prof. Jin Wang and Dr Alireza E. Majd, Liverpool John Moores University"). Right to work is stated in the header in words, not implied. Present tense for the current role only, past tense for everything else. Date ranges keep the existing format (en dash allowed per voice-notes.md), consistently.
+- **Plain-language outcomes.** Write every bullet so a non-specialist recruiter could follow it: lead with what changed because of the work (an interval extended, a risk found, a plan delivered, a number), then the technical method. If an achievement only sounds impressive because of jargon, rewrite it around the outcome. Keep the technical terms the role demands (they are ATS keywords), just not as the whole point of the sentence.
+- **Single-column CV.** No tables, text boxes, columns or graphics for core content. Contact details sit in the body, not in a header or footer.
 - **Profile section stays short.** 3-4 sentences, roughly 50-70 words — a recruiter skims a CV in seconds, and a dense paragraph doesn't get read. Every sentence must carry a real fact, skill, or JD keyword. Cut connective/narrative scene-setting ("that work covered...", "that foundation already includes..."), not the substance — if a JD term (e.g. a specific tool or technique the JD asks for that the profile is honestly bridging from adjacent experience) appears nowhere else in the CV, keep it in the trimmed Profile rather than cutting it for length; check before finalizing that no JD keyword present in the untrimmed draft has been dropped from the CV entirely. Lead with the strongest direct match to the JD, not chronological scene-setting.
 
 ## 0. Load context
@@ -42,6 +44,10 @@ Then build a map, one row per knockout and preferred item:
 | e.g. Full UK driving licence | Knockout | Not stated | `==[CONFIRM: Full UK driving licence]==` |
 | e.g. CSWIP 3.4U | Knockout | Not held | Honest gap: name the closest real evidence, flag in report |
 
+Also record two decisions from the JD:
+- **Top 3 requirements:** the 2-3 requirements that matter most to this employer (usually the first knockouts plus the duty the ad repeats most). These drive the cover letter.
+- **Letter type:** `full` only if the ad explicitly asks for a cover letter, covering letter, motivation letter or personal statement (or the portal has a required letter field); otherwise `short` (requirement-to-proof). Note the choice in the final report.
+
 **Every knockout must end as evidenced, a placeholder, or an explicitly flagged honest gap. Never leave one unaddressed.** Also run a gap check on the source CV's dates: any gap of 3+ months between roles or study gets a `==[GAP: ...]==` unless `background.md` already explains it. Pass the map to every drafting subagent and the ATS scorer.
 
 ## 2. Generate CV + cover letter/personal statement (parallel)
@@ -53,7 +59,26 @@ Read the chosen CV source file. If it's still just the placeholder, stop and tel
 
 **CV-tailoring subagent** — `general-purpose` Agent (fresh) with a self-contained prompt containing: the full chosen CV source file, full `profile/$PROFILE/voice-notes.md`, the job's `jd_text`/role/company/location, and the constraints above (no fabrication, ATS-parseable, sound like them). Instruction: reorder bullets to surface the most relevant experience first, mirror the JD's own terminology only where it's an honest match. Also: (1) the bold headline line under the name uses the JD's job title exactly; (2) the header line states right to work and any knockout items such as location or relocation; (3) if the JD has 2+ knockouts, add a short **Key Qualifications** section directly after the Profile that answers them point by point in the JD's order, using evidence or the map's placeholders; (4) work each JD keyword in naturally at least once, never repeated artificially and never as hidden text; (5) order the skills so the JD's top priorities come first; (6) relabel a role only where the source duties support it. Output: complete tailored CV in Markdown, plus the list of placeholders used.
 
-**Cover-letter subagent** — second `general-purpose` Agent (fresh) with: `profile/$PROFILE/background.md`, full `profile/$PROFILE/voice-notes.md`, the job's `jd_text`/role/company, and the constraints above. Instruction: one page, 5 to 6 short paragraphs: opening (role, headline qualification, single strongest match), recent experience mirroring the JD's duties, background in one paragraph, motivation tied to one JD motivator, practicalities (knockouts such as location, visa, licence, using the same placeholders as the CV, and weaknesses addressed directly), close. Concise and specific, referencing 1-2 concrete things about the company/role, connected to the profile's actual background as described in `background.md`'s "Why this person is a fit" section (real, concrete facts and numbers from there — not generic claims) where genuinely relevant. No filler. Output: complete cover letter in Markdown.
+**Cover-letter subagent** — second `general-purpose` Agent (fresh) with: `profile/$PROFILE/background.md`, full `profile/$PROFILE/voice-notes.md`, the job's `jd_text`/role/company, the step 1b Top 3 and letter type, and the constraints above.
+
+*Letter type `short` (the default):* a requirement-to-proof letter, about 120-180 words, in this shape:
+```
+Dear Hiring Manager,
+
+I am applying for the <exact role title> role at <company>. <One sentence: headline qualification and the single strongest match.>
+
+- <Their requirement, in the ad's words> → <my specific evidence: a named project, a number, an outcome>
+- <Their requirement> → <my specific evidence>
+- <Their requirement> → <my specific evidence>
+
+<One or two sentences of practicalities: notice period, location or relocation, right to work, using the same placeholders as the CV.>
+
+Yours sincerely,
+<Name>
+```
+Use exactly the Top 3 from step 1b, two at minimum. Each evidence line must be concrete and checkable (what was done, on what, with what result), written in plain language with the outcome first. No generic claims ("strong communication skills"), no paragraph of motivation. The arrow is `→`, never an em dash.
+
+*Letter type `full` (only when the ad asks for one):* one page, 5 to 6 short paragraphs: opening (role, headline qualification, single strongest match), recent experience mirroring the JD's duties, background in one paragraph, motivation tied to one JD motivator, practicalities (knockouts such as location, visa, licence, using the same placeholders as the CV, and weaknesses addressed directly), close. Concise and specific, referencing 1-2 concrete things about the company/role, connected to the profile's actual background as described in `background.md`'s "Why this person is a fit" section (real, concrete facts and numbers from there — not generic claims) where genuinely relevant. No filler. Output: complete cover letter in Markdown.
 
 ### If `track` is `phd`
 Read `profile/$PROFILE/cv-phd.md` and `profile/$PROFILE/personal-statement.md`. If `cv-phd.md` is still placeholder-only, stop and tell the user to fill it in.
@@ -73,6 +98,22 @@ If `score` < 80, run one revision pass before saving anything — don't just pas
 **CV-revision subagent** — `general-purpose` Agent (fresh) with: the tailored CV text, the job's `jd_text`, the ATS `notes` from step 3, the original chosen CV source file (`cv.md`/`cv-grad.md`/`cv-phd.md`), and the constraints from the top of this file (no fabrication, ATS-parseable, sound like them, Profile section length limit). Instruction: address each gap named in `notes` **only by surfacing real, already-true content from the source CV/`background.md` that step 2 left out or under-emphasized** — pull in a genuinely matching skill/tool/metric that exists but didn't make it into the tailored draft, mirror more of the JD's exact phrasing where it's an honest match, fix structural issues (section headers, formatting) the notes called out. Never invent anything to close a gap that's real (no matching experience exists) — if a required item genuinely isn't in the profile, leave it as a gap. Output: complete revised CV in Markdown.
 
 Then re-run the same ATS-scoring subagent from step 3 on the revised CV to get an updated `{"score", "notes"}`. Run this optimize-and-rescore cycle **at most once** — take whatever the second score is (even if still < 80, since further gaps at that point are likely genuine and not fabricable) and use the revised CV as the final output going forward.
+
+## 4b. Critical review: smooth, plain English (always, added 19 Oct 2026)
+Run this on every CV and cover letter (or personal statement) after step 4 and before anything is saved, built or queued. The aim: a document any reader finds easy and pleasant to read, a recruiter with no engineering background as much as a hiring engineer.
+
+**Reviewer subagent:** a fresh `general-purpose` Agent with the final CV, the letter, the job's `jd_text`, `profile/$PROFILE/voice-notes.md` and the source CV (for fact checks). Its instruction: be a demanding editor, not a cheerleader. Read every sentence and report each problem as `{location, quote, problem, fix}` under these checks:
+1. **Grammar and spelling:** errors, agreement, tense (present for the current role only, past for the rest), articles, punctuation, British spelling.
+2. **Smoothness:** sentences that are clunky, run-on, stacked with clauses, or that a reader would have to read twice. Repeated words or openings in nearby lines. Abrupt jumps between sentences in the letter.
+3. **Too technical:** any line that a non-specialist recruiter can't follow. Keep the JD's own terms (they are ATS keywords) but make sure each line says in plain words what was achieved. Spell out an acronym the first time. No more than one acronym-heavy phrase per bullet.
+4. **Length and density:** bullets over about 30 words, Profile over 70 words, a letter paragraph over 4 sentences, filler that carries no fact.
+5. **Tone:** confident and natural, like a capable person writing it themselves. Nothing stiff, salesy or AI-sounding (the voice-notes.md banned list, rule-of-three padding, "I am excited to"). No em dash.
+6. **Accuracy:** every claim traces to the source CV or `background.md`. Flag anything that has drifted.
+7. **Consistency:** the same job titles, dates, tool names and placeholder text in the CV and the letter.
+
+Then **apply every fix** yourself, keeping all facts and every JD keyword that honestly applies (check none was lost). If a fix touched a keyword line, re-run the step 3 ATS score; a review must not drop the score more than 3 points, so if it does, restore the keyword in a plainer sentence instead. Run the reviewer **a second time** on the fixed version; it should come back with nothing above a minor issue. If a real problem remains after two passes, list it in the report rather than looping.
+
+Report a short **Review** line in step 6: how many issues were found and fixed by type (for example "grammar 3, smoothness 5, too technical 4"), and any left over.
 
 ## 5. Save output
 
@@ -98,7 +139,7 @@ curl -X PATCH "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs?id=eq.<id>"
 **Draft files:** build a draft with `python ../tools/build_cv.py <cv.md> <out.docx>` and `python ../tools/build_letter.py <cover-letter.md> <out.docx> "<recipient lines>"` (for any profile other than Xavier's, add `--sender <profile>`, e.g. `--sender shamna`, or the letterhead prints his name and contact details), then convert to PDF with LibreOffice (`"C:/Program Files/LibreOffice/program/soffice.exe" --headless --convert-to pdf`). In drafts, placeholders render with a yellow highlight and the builder prints them. File names: `Xavier_Sojan_CV_<Company>_<Role>.docx/.pdf` and `Xavier_Sojan_Cover_Letter_<Company>.docx/.pdf` in the job folder.
 
 ## 6. Report
-Report to the user: the requirement map (knockouts only, one line each: evidenced / placeholder / honest gap), then an **Items to confirm** list, one numbered line per placeholder with its tag and every place it appears, e.g. `1. [CONFIRM] Full UK driving licence (CV header, Key Qualifications, cover letter para 5)`. Then the ATS score (and, if step 4 ran, the before/after score so the improvement is visible), a one-line reason for it, where the local files landed, and a 2-3 sentence summary of the angle each document took. Remind them these are drafts for review — nothing gets submitted automatically. If the final ATS score is still below ~70, flag the specific gap from `ats_notes` so they know what to look at before applying — at this point it's a genuine gap in the profile, not something the tailoring pass could fix without fabricating.
+Report to the user: the requirement map (knockouts only, one line each: evidenced / placeholder / honest gap), then an **Items to confirm** list, one numbered line per placeholder with its tag and every place it appears, e.g. `1. [CONFIRM] Full UK driving licence (CV header, Key Qualifications, cover letter para 5)`. Then the letter type used (short or full, and why), and the job's source (company site, job board, referral or recruiter; if the `jobs` row has no `source_url` or no "Source:" note, add it now). Then the ATS score (and, if step 4 ran, the before/after score so the improvement is visible), the step 4b **Review** line, a one-line reason for it, where the local files landed, and a 2-3 sentence summary of the angle each document took. Remind them these are drafts for review — nothing gets submitted automatically. If the final ATS score is still below ~70, flag the specific gap from `ats_notes` so they know what to look at before applying — at this point it's a genuine gap in the profile, not something the tailoring pass could fix without fabricating.
 
 ## 7. Resolve placeholders, then final build
 When the user answers the Items to confirm list:
@@ -116,6 +157,10 @@ Update the markdown files and the `applications` row, re-run the ATS score if an
 - [ ] Each JD keyword that honestly applies appears at least once.
 - [ ] Present tense for the current role only; dates consistent; any 3+ month gaps explained or deliberately left.
 - [ ] Single column, contact details in the body, standard headings.
+- [ ] **ATS plain-text check:** convert the final .docx and .pdf to plain text (`soffice --headless --convert-to "txt:Text (encoded):UTF8" <file>.docx`, and `python -c "import pypdf,sys;print('\n'.join(p.extract_text() for p in pypdf.PdfReader(sys.argv[1]).pages))" <file>.pdf`) and read the result top to bottom. Name and contact line first, every heading present and in order, every bullet and date intact, no text missing, merged or out of sequence. If anything is scrambled, the ATS will read it the same way: fix the layout and rebuild before sending.
+- [ ] Every bullet leads with the outcome in plain language; jargon is there because the JD uses it, not to make the line sound bigger.
+- [ ] Step 4b critical review re-run on the final text after placeholders were resolved (answers often add clumsy wording): no grammar errors, no sentence that needs reading twice, nothing a non-specialist can't follow.
+- [ ] Cover letter matches the letter type from step 1b: short requirement-to-proof (2-3 arrow lines) unless the ad asked for a full letter.
 - [ ] CV at most 2 pages, cover letter 1 page, no orphaned heading or a role split awkwardly across pages.
 - [ ] File names follow the convention. Upload format: .docx for corporate ATS portals (Workday, Oracle, SuccessFactors, Taleo) unless they ask for PDF; PDF for email, LinkedIn Easy Apply and university portals.
 

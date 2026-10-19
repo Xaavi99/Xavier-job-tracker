@@ -22,9 +22,13 @@ Filtered to `$PROFILE` — each profile's tracker is independent, so the same ex
 For each track actually in scope for `$PROFILE` (per `background.md` — skip any track that file says isn't used for this profile), launch a `general-purpose` Agent (fresh, not a fork) with a self-contained prompt containing:
 - The full text of that track's section from `profile/$PROFILE/background.md` — target roles, seniority, domain, and location scope all come from there, not from any assumption baked into this command.
 - Instruction: search general boards (LinkedIn Jobs, Indeed, Glassdoor) plus whichever sector-specific boards, national job boards, or company career pages are actually relevant to the domain and locations described in that section — pick boards suited to the industry and geography named there (e.g. a UK offshore-wind search and an India-based refining/asset-integrity search call for entirely different boards; use judgement, don't default to one profile's boards for another). For a `phd` track, search FindAPhD, jobs.ac.uk, and university department funding/studentship pages instead of general job boards — location is secondary to research fit there.
+- **Company career pages before job boards.** Roles often appear on the employer's own site first. Start with the target employer list in `profile/$PROFILE/target-employers.md` (if it doesn't exist yet, build it from `background.md` and the employers already in the tracker, save it, and tell the user), check each employer's careers page directly, then move on to the boards.
+- **Recency.** Prioritise roles posted in the last week and note the posted date in `jd_text`. A strong match that is a week or more old is still worth adding, especially in niche fields; never drop a Tier A role for age alone, only when it is closed.
+- **Anonymous listings** ("confidential client", "leading operator", recruiter ads with no employer): search a distinctive sentence from the ad in quotes. It often finds the employer's own posting, sometimes with more detail or a different salary range. If found, record the real employer and link to their posting; keep the recruiter link in `notes`.
+- **Source.** Return a `source` for every candidate: `company site`, `job board (<name>)`, `referral (<name>)` or `recruiter (<agency>)`.
 - If the section says something like "weight X first, then also search Y" (e.g. a home city/country weighted first with wider search beyond it), follow that ordering — surface results from the weighted-first scope but don't exclude the rest.
 
-Each agent returns a structured list per candidate: `role, company, location, link, source_url, jd_text` (jd_text = a few sentences summarizing actual requirements, not just the search snippet). Cap each track at ~15-25 candidates. Run all requested tracks' discovery agents in parallel (single message, multiple Agent calls).
+Each agent returns a structured list per candidate: `role, company, location, link, source_url, source, posted, jd_text` (jd_text = a few sentences summarizing actual requirements, not just the search snippet). Cap each track at ~15-25 candidates. Run all requested tracks' discovery agents in parallel (single message, multiple Agent calls).
 
 ## 3. Dedupe
 Drop any candidate matching an existing row from step 1 by `link`, or by `(company, role, track)` if the link differs but both match closely.
@@ -54,7 +58,9 @@ curl -X POST "https://nthonxtycsyplkmpwjrh.supabase.co/rest/v1/jobs" \
   -d '{"id":<next int>,"role":"...","company":"...","location":"...","tier":"A","status":"Interested","date":"","notes":"...","link":"...","referral":false,"track":"industry","source_url":"...","jd_text":"...","discovered_at":"<ISO timestamp now>","profile":"$PROFILE"}'
 ```
 
+**Every row records its source.** `source_url` is always set, and `notes` always starts with `Source: <company site | job board (name) | referral (name) | recruiter (agency)>.` Set `"referral": true` for referrals.
+
 Batching multiple candidates into a single POST with a JSON array body works too — just give each element in the array its own sequential `id`.
 
 ## 6. Report
-Report to the user: how many new roles were added per track, broken down by tier within each, and call out the top 2-3 standout matches overall by name with a one-line reason. Remind them the live tracker will show them next time they open/refresh the page (after signing in), under the `$PROFILE` profile card, filterable further by the track pills.
+Report to the user: how many new roles were added per track, broken down by tier within each, and call out the top 2-3 standout matches overall by name with a one-line reason. Add a **source review**: from all of `$PROFILE`'s rows, count jobs by source (from the `Source:` note, or inferred from `source_url` for older rows) and how many of each reached `Interview` or `Offer`. Name the source producing the most interviews and suggest putting more search time there; if no row has reached interview yet, say so and show counts only. Remind them the live tracker will show them next time they open/refresh the page (after signing in), under the `$PROFILE` profile card, filterable further by the track pills.
