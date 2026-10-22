@@ -730,7 +730,7 @@ function renderProfileGrid() {
   document.getElementById('profile-grid-trackers').innerHTML =
     PROFILES.filter(p => p.group !== 'focus').map(p => card(p, false)).join('');
   document.getElementById('profile-grid-master').innerHTML = MASTER_CVS.map(m => `
-      <button class="profile-card" onclick="openMasterCv('${m.profile}')">
+      <button class="profile-card" onclick="openMasterCv('${m.key}')">
         <div class="profile-avatar" style="font-size:16px">${esc(m.avatar)}</div>
         <span>${esc(m.label)}</span>
       </button>`).join('');
@@ -739,24 +739,27 @@ function renderProfileGrid() {
 // Each person's general-purpose CV, the base every tailored CV starts from.
 // Stored as an `applications` row with no job_id and extra_content.master = true,
 // so it needs no extra table. Update it by PATCHing that row's cv_content.
+// A variant (extra_content.variant) is a second master for the same person, e.g. reliability roles.
 const MASTER_CVS = [
-  { profile: 'uk',     avatar: 'X·CV', label: 'Xavier — Master CV', name: 'Xavier Sojan', file: 'Xavier_Sojan_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_General' },
-  { profile: 'shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV',     letterFile: 'Shamna_K_Cover_Letter_General' }
+  { key: 'uk',     profile: 'uk',     avatar: 'X·CV', label: 'Xavier — Master CV', name: 'Xavier Sojan', file: 'Xavier_Sojan_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_General' },
+  { key: 'uk-reliability', profile: 'uk', variant: 'reliability', avatar: 'R·CV', label: 'Xavier — Reliability Master CV', name: 'Xavier Sojan', title: 'Reliability Master CV', file: 'Xavier_Sojan_Reliability_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_Reliability' },
+  { key: 'shamna', profile: 'shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV',     letterFile: 'Shamna_K_Cover_Letter_General' }
 ];
 
 let masterState = null;
 
-async function openMasterCv(profile) {
-  const m = MASTER_CVS.find(x => x.profile === profile);
+async function openMasterCv(key) {
+  const m = MASTER_CVS.find(x => x.key === key);
   let row;
   try {
-    const rows = await sbFetch('applications?select=cv_content,cover_letter_content,created_at&job_id=is.null&profile=eq.' + profile
-      + '&extra_content->>master=eq.true&order=created_at.desc&limit=1');
+    const rows = await sbFetch('applications?select=cv_content,cover_letter_content,created_at&job_id=is.null&profile=eq.' + m.profile
+      + '&extra_content->>master=eq.true&extra_content->>variant=' + (m.variant ? 'eq.' + m.variant : 'is.null')
+      + '&order=created_at.desc&limit=1');
     row = rows && rows[0];
   } catch (e) { row = null; }
   if (!row) { showToast('No master CV saved yet for ' + m.name, true); return; }
   masterState = { m, row, tab: 'cv' };
-  document.getElementById('master-cv-title').textContent = m.name + ' · Master CV';
+  document.getElementById('master-cv-title').textContent = m.name + ' · ' + (m.title || 'Master CV');
   document.getElementById('master-cv-note').innerHTML =
     `<span>General CV and cover letter that every tailored application starts from. Saved ${esc(new Date(row.created_at).toLocaleDateString('en-GB'))}.</span>`;
   document.getElementById('master-tab-cl').classList.toggle('hidden', !row.cover_letter_content);
