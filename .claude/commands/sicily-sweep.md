@@ -48,6 +48,13 @@ She may apply on her own, so reconcile every application email against the track
 
 Read the full JD of every candidate from these feeds, not just the card.
 
+**Big-company in-house legal, every run (added 30 Oct 2026, Xavier).** Search their careers sites and LinkedIn (company filter, India first, then abroad) for legal, contracts, compliance, privacy, IP and AI-governance roles at junior level, plus any graduate, trainee, early-careers or legal internship-to-hire scheme:
+- **Energy, maritime and assurance:** ExxonMobil (Bengaluru), Shell (Bengaluru/Chennai business centres; the Shell Graduate Programme India is cross-functional, watch for the 2027 intake), bp (Pune), SSE, Lloyd's Register (Mumbai), DNV, Maersk.
+- **Consulting and Big 4:** Deloitte (USI Hyderabad, OGC and Contract Centre of Excellence), EY (Law RRM and GDS legal), KPMG, PwC, Accenture (Contracting, IP counsel).
+- **AI and IT:** Google, Microsoft, Amazon (incl. Amazon MGM Studios), Meta, Adobe, Salesforce, IBM, Oracle, Qualcomm, Cognizant, Infosys, TCS, Wipro, HCLTech, Thomson Reuters, LexisNexis, Clarivate, plus legal-AI companies (Elevate, Integreon, UnitedLex, Harvey, SpotDraft, Leegality).
+- Lead her CV with in-house contracts and NDAs for contracts roles, and with the AI in Practice certification, the AI Directors dissertation and the copyright papers for AI, privacy and tech roles. Most of these teams ask 2+ years: note the gap honestly and still apply to Tier A/B fits.
+- **Enrolment check:** some captive centres (e.g. Deloitte USI OGC) require that the candidate does not hold an active Indian practice licence. Flag it in the job notes; she would have to suspend her enrolment while employed in-house.
+
 **Titles** (OR them together in one LinkedIn search):
 - IP Associate, Trademark Associate, Intellectual Property Associate, IP Paralegal, IP Analyst;
 - Legal Associate, Legal Executive, Legal Officer, Legal Counsel, Corporate Counsel, Contracts Associate, Contract Manager (Legal);
