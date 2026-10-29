@@ -121,6 +121,15 @@
   .profile-badge.live{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
   .profile-person{font-size:10px;font-family:var(--font-mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.07em}
   .profile-sep{width:160px;height:1px;background:var(--border2)}
+  .profile-screen{overflow-y:auto;padding:2rem 16px}
+  .profile-screen-inner{max-width:900px;width:100%;margin:auto}
+  .profile-grid.people{gap:2rem}
+  .person-card{width:210px}
+  .person-card .profile-avatar{width:112px;height:112px;font-size:38px;border-color:var(--accent);background:var(--surface)}
+  .person-text{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .person-card .person-name{font-size:15px;color:var(--text);font-weight:500}
+  .person-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .person-back{align-self:flex-start}
   #app{max-width:1280px;margin:0 auto}
   .hidden{display:none !important}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:300;padding:2rem}
@@ -255,6 +264,48 @@
   }
   @media (max-width:620px){
     body{padding:1rem}
+    /* Front page: people as full-width rows, a person's views as a two-column grid of tiles */
+    .profile-screen{align-items:flex-start}
+    .profile-screen-inner{gap:1.25rem}
+    .profile-group{width:100%}
+    .profile-grid.people{flex-direction:column;align-items:stretch;gap:12px;width:100%}
+    .person-card{width:100%;flex-direction:row;align-items:center;gap:14px;padding:14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg)}
+    .person-card .profile-avatar{width:56px;height:56px;font-size:20px;flex:none}
+    .person-text{align-items:flex-start;text-align:left}
+    .person-badges{justify-content:flex-start}
+    .profile-grid.focus,.profile-grid.compact{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}
+    .profile-grid.focus .profile-card,.profile-grid.compact .profile-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 8px;text-align:center}
+    .profile-grid.focus .profile-avatar{width:64px;height:64px}
+    .profile-sep{display:none}
+    /* Header: title on its own line, buttons in one scrollable row */
+    header{flex-direction:column;align-items:stretch;gap:0.75rem;margin-bottom:1.25rem}
+    .header-actions{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+    .header-actions .btn{flex:none;padding:7px 12px}
+    /* Jobs table becomes one card per role */
+    .table-wrap{background:none;border:none;overflow:visible}
+    table{min-width:0;table-layout:auto}
+    thead{display:none}
+    table,tbody,tbody td{display:block;width:100%}
+    tbody tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px 10px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px;margin-bottom:10px}
+    tbody tr:last-child{border-bottom:1px solid var(--border)}
+    tbody td{padding:0;width:auto}
+    tbody td[colspan]{grid-column:1 / -1}
+    tbody td:nth-child(1){grid-column:1 / -1;grid-row:1}
+    tbody td:nth-child(1) .role-name,tbody td:nth-child(1) .company-name{white-space:normal}
+    tbody td:nth-child(2){grid-column:1;grid-row:2}
+    tbody td:nth-child(3){grid-column:2;grid-row:2}
+    tbody td:nth-child(5){grid-column:3 / -1;grid-row:2;justify-self:end}
+    tbody td:nth-child(4),tbody td:nth-child(6){grid-column:1 / -1;display:flex;align-items:center;gap:8px}
+    tbody td:nth-child(4)::before{content:'Deadline';flex:none;width:64px;font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase}
+    tbody td:nth-child(6)::before{content:'Applied';flex:none;width:64px;font-family:var(--font-mono);font-size:10px;color:var(--muted);text-transform:uppercase}
+    tbody td:nth-child(7){grid-column:1 / -1}
+    tbody td:nth-child(8){grid-column:1 / 3}
+    tbody td:nth-child(9){grid-column:3}
+    tbody td:nth-child(10){grid-column:4}
+    .inline-input{font-size:16px}
+    .search-wrap{width:100%;flex-wrap:nowrap}
+    .search-input-wrap{flex:1;min-width:0}
+    #search{width:100%}
     h1{font-size:22px}
     .stat{min-height:0;padding:0.8rem 1rem}
     .stat-num{font-size:24px}
@@ -282,18 +333,25 @@
 </div>
 
 <div class="profile-screen hidden" id="profile-screen">
-  <div class="profile-screen-inner">
+  <div class="profile-screen-inner" id="people-view">
     <div class="profile-group">
-      <h2>What needs you today</h2>
+      <h2>Whose job search?</h2>
+      <div class="profile-grid people" id="profile-grid-people"></div>
+    </div>
+  </div>
+  <div class="profile-screen-inner hidden" id="person-view">
+    <button class="btn person-back" onclick="showPeople()">&larr; All people</button>
+    <div class="profile-group">
+      <h2 id="person-h2"></h2>
       <div class="profile-grid focus" id="profile-grid-focus"></div>
     </div>
-    <div class="profile-sep"></div>
-    <div class="profile-group">
+    <div class="profile-sep" id="sep-master"></div>
+    <div class="profile-group" id="group-master">
       <div class="profile-group-label">Master CVs</div>
       <div class="profile-grid compact" id="profile-grid-master"></div>
     </div>
-    <div class="profile-sep"></div>
-    <div class="profile-group">
+    <div class="profile-sep" id="sep-trackers"></div>
+    <div class="profile-group" id="group-trackers">
       <div class="profile-group-label">Full trackers</div>
       <div class="profile-grid compact" id="profile-grid-trackers"></div>
     </div>
@@ -343,7 +401,7 @@
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Add role
     </button>
-    <button class="btn" onclick="showProfileScreen()">Switch profile</button>
+    <button class="btn" onclick="showProfileScreen()">&larr; Back</button>
     <button class="btn" onclick="signOut()">Sign out</button>
   </div>
 </header>
@@ -646,13 +704,16 @@ const PROFILES = [
   { id: 'automation',     avatar: 'AI',   avatarSize: 26, label: 'AI Automation',            title: 'Xavier Sojan · AI Automation',       tab: 'AI Automation · Activity log',  tracks: [], kind: 'automation', group: 'focus', person: 'Xavier',  logProfiles: ['uk', 'europe', 'graduate-roles', 'phd', 'daniel-may'] },
   { id: 'shamna-hot',     avatar: 'S·HOT', avatarSize: 13, label: 'Shamna — Hot Jobs',       title: 'Shamna K · Hot Jobs',                tab: 'Shamna · Hot Jobs',             tracks: [], kind: 'hot',        group: 'focus', person: 'Shamna',  jobProfiles: ['shamna'] },
   { id: 'shamna-automation', avatar: 'S·AI', avatarSize: 15, label: 'Shamna — AI Automation', title: 'Shamna K · AI Automation',          tab: 'Shamna · AI Automation',        tracks: [], kind: 'automation', group: 'focus', person: 'Shamna',  logProfiles: ['shamna'] },
-  { id: 'uk',             avatar: 'UK',   avatarSize: 24, label: 'Xavier — UK',              title: 'Xavier Sojan · UK',                 tab: 'UK — Job Tracker',            tracks: ['industry', 'phd'] },
-  { id: 'europe',         avatar: 'EU',   avatarSize: 18, label: 'Xavier — Europe',          title: 'Xavier Sojan · Europe',             tab: 'Europe — Job Tracker',         tracks: ['europe'] },
-  { id: 'graduate-roles', avatar: 'Grad', avatarSize: 16, label: 'Xavier — Graduate Roles',  title: 'Xavier Sojan · Graduate Roles',      tab: 'Graduate Roles — Job Tracker',  tracks: ['industry'] },
-  { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna K · All tracked roles',       tab: 'Shamna — Job Tracker',          tracks: ['industry'] },
-  { id: 'phd',            avatar: 'PhD',  avatarSize: 18, label: 'PhD Scholarships',         title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker', tracks: ['phd'] },
-  { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'] },
-  { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses' }
+  { id: 'sicily-hot',     avatar: 'SI·HOT', avatarSize: 12, label: 'Sicily — Hot Jobs',      title: 'Sicily · Hot Jobs',                  tab: 'Sicily · Hot Jobs',             tracks: [], kind: 'hot',        group: 'focus', person: 'Sicily',  jobProfiles: ['sicily'] },
+  { id: 'sicily-automation', avatar: 'SI·AI', avatarSize: 14, label: 'Sicily — AI Automation', title: 'Sicily · AI Automation',          tab: 'Sicily · AI Automation',        tracks: [], kind: 'automation', group: 'focus', person: 'Sicily',  logProfiles: ['sicily'] },
+  { id: 'uk',             avatar: 'UK',   avatarSize: 24, label: 'Xavier — UK',              title: 'Xavier Sojan · UK',                 tab: 'UK — Job Tracker',            tracks: ['industry', 'phd'], person: 'Xavier' },
+  { id: 'europe',         avatar: 'EU',   avatarSize: 18, label: 'Xavier — Europe',          title: 'Xavier Sojan · Europe',             tab: 'Europe — Job Tracker',         tracks: ['europe'], person: 'Xavier' },
+  { id: 'graduate-roles', avatar: 'Grad', avatarSize: 16, label: 'Xavier — Graduate Roles',  title: 'Xavier Sojan · Graduate Roles',      tab: 'Graduate Roles — Job Tracker',  tracks: ['industry'], person: 'Xavier' },
+  { id: 'shamna',         avatar: 'S',                    label: 'Shamna',                   title: 'Shamna K · All tracked roles',       tab: 'Shamna — Job Tracker',          tracks: ['industry'], person: 'Shamna' },
+  { id: 'sicily',         avatar: 'SI',   avatarSize: 22, label: 'Sicily',                   title: 'Sicily · All tracked roles',         tab: 'Sicily — Job Tracker',          tracks: ['industry'], person: 'Sicily' },
+  { id: 'phd',            avatar: 'PhD',  avatarSize: 18, label: 'PhD Scholarships',         title: 'Fully-Funded Engineering Scholarships', tab: 'PhD Scholarships — Tracker', tracks: ['phd'], person: 'Xavier' },
+  { id: 'daniel-may',     avatar: 'DM',   avatarSize: 16, label: 'Daniel May Picks',         title: 'Xavier Sojan · Daniel May Picks',    tab: 'Daniel May Picks — Job Tracker', tracks: ['industry'], person: 'Xavier' },
+  { id: 'courses',        avatar: 'C',    avatarSize: 28, label: 'Courses',                  title: 'Xavier Sojan · Courses',             tab: 'Courses — Learning Tracker',    tracks: [], kind: 'courses', person: 'Xavier' }
 ];
 
 const VIEW_IDS = { jobs: 'jobs-view', courses: 'courses-view', hot: 'hot-view', automation: 'automation-view' };
@@ -668,7 +729,11 @@ const HOT_HOW = {
   Shamna: `<h3>Shamna's manual applications</h3><ol>
     <li>Roles with no LinkedIn Easy Apply, so someone has to fill in a company portal, Naukri or an email application. Easy Apply roles are handled in her AI automation view instead.</li>
     <li>Every role here already has a CV tailored by the same algorithm as Xavier's: JD requirement map, Key Qualifications answering the knockouts, ATS score out of 100. Open the materials to read it.</li>
-    <li>Send it from her own address, kshamna16@gmail.com, then click "Mark applied".</li></ol>`
+    <li>Send it from her own address, kshamna16@gmail.com, then click "Mark applied".</li></ol>`,
+  Sicily: `<h3>Sicily's manual applications</h3><ol>
+    <li>Legal roles that need a firm's own portal, a recruiter or an email application. LinkedIn Easy Apply roles are in her AI automation view instead.</li>
+    <li>Each role here already has a tailored CV and cover letter, written for legal recruiters rather than engineering ATS. Open the materials to read them.</li>
+    <li>Send it from her own address, then click "Mark applied".</li></ol>`
 };
 
 const AUTO_HOW = {
@@ -679,6 +744,10 @@ const AUTO_HOW = {
   Shamna: `<h3>Shamna's AI automation</h3><ol>
     <li>Run <code>/shamna-sweep</code> in Claude Code. It works in her own Chrome profile, reads her Gmail (kshamna16@gmail.com) and her LinkedIn, searches India first and then the Gulf and worldwide, and prepares applications with the same CV algorithm used for Xavier.</li>
     <li>Easy Apply roles and recruiter emails land here as <b>Awaiting approval</b>. Nothing is sent or submitted until you say yes in chat. Roles that need a manual application go to her <b>Hot Jobs</b> view instead.</li>
+    <li>Approve with <code>/send-approved</code>. Her material always goes out from her own address, never yours.</li></ol>`,
+  Sicily: `<h3>Sicily's AI automation</h3><ol>
+    <li>Run <code>/sicily-sweep</code> in Claude Code. It works in her own Chrome profile, reads her Gmail and LinkedIn, finds legal roles and prepares tailored applications.</li>
+    <li>Easy Apply roles and recruiter emails land here as <b>Awaiting approval</b>. Nothing is sent or submitted until you say yes in chat. Roles that need a manual application go to her <b>Hot Jobs</b> view.</li>
     <li>Approve with <code>/send-approved</code>. Her material always goes out from her own address, never yours.</li></ol>`
 };
 let automationLog = [];
@@ -717,23 +786,78 @@ function frontBadge(p) {
   return '';
 }
 
+// The front page shows only the people. Picking one opens everything that
+// belongs to them: their Hot Jobs and AI Automation, Master CVs and full trackers.
+const PEOPLE = [
+  { name: 'Xavier', fullName: 'Xavier Sojan', avatar: 'X',  sub: 'Engineering · UK and Europe' },
+  { name: 'Shamna', fullName: 'Shamna K',     avatar: 'S',  sub: 'Asset integrity · India and Gulf' },
+  { name: 'Sicily', fullName: 'Sicily Sojan', avatar: 'SI', sub: 'Law · India and abroad' }
+];
+let currentPerson = null;
+
+// One summary badge per person: everything waiting on them across their focus views.
+function personBadge(name) {
+  if (!frontCounts) return '';
+  const mine = PROFILES.filter(p => p.person === name && p.group === 'focus');
+  const hotScope = mine.filter(p => p.kind === 'hot').flatMap(p => jobProfilesFor(p.id));
+  const logScope = mine.filter(p => p.kind === 'automation').flatMap(p => logProfilesFor(p.id));
+  const hot = frontCounts.hot.filter(j => hotScope.includes(j.profile || 'uk') && !HOT_DONE_STATUSES.includes(j.status)).length;
+  const log = frontCounts.log.filter(x => logScope.includes(x.profile || 'uk')).length;
+  if (hot + log === 0) return '<span class="profile-badge">all clear</span>';
+  return (hot ? `<span class="profile-badge live">${hot} need${hot === 1 ? 's' : ''} you</span>` : '')
+    + (log ? `<span class="profile-badge live">${log} to approve</span>` : '');
+}
+
 function renderProfileGrid() {
+  document.getElementById('profile-grid-people').innerHTML = PEOPLE.map(x => `
+      <button class="profile-card person-card" onclick="showPerson('${x.name}')">
+        <div class="profile-avatar">${esc(x.avatar)}</div>
+        <div class="person-text">
+          <span class="person-name">${esc(x.fullName)}</span>
+          <span class="profile-person">${esc(x.sub)}</span>
+          <div class="person-badges">${personBadge(x.name)}</div>
+        </div>
+      </button>`).join('');
+  if (currentPerson) renderPersonView();
+}
+
+function renderPersonView() {
+  const name = currentPerson;
+  const person = PEOPLE.find(x => x.name === name);
   const card = (p, withBadge) => `
       <button class="profile-card" onclick="chooseProfile('${p.id}')">
         <div class="profile-avatar"${p.avatarSize ? ` style="font-size:${p.avatarSize}px"` : ''}>${esc(p.avatar)}</div>
-        ${withBadge && p.person ? `<span class="profile-person">${esc(p.person)}</span>` : ''}
-        <span>${esc(withBadge ? p.label.replace(/^\w+ — /, '') : p.label)}</span>
+        <span>${esc(p.label.replace(/^\w+ — /, ''))}</span>
         ${withBadge ? frontBadge(p) : ''}
       </button>`;
+  const mine = PROFILES.filter(p => p.person === name);
+  const masters = MASTER_CVS.filter(m => m.person === name);
+  const trackers = mine.filter(p => p.group !== 'focus');
+  document.getElementById('person-h2').textContent = person ? person.fullName : name;
   document.getElementById('profile-grid-focus').innerHTML =
-    PROFILES.filter(p => p.group === 'focus').map(p => card(p, true)).join('');
-  document.getElementById('profile-grid-trackers').innerHTML =
-    PROFILES.filter(p => p.group !== 'focus').map(p => card(p, false)).join('');
-  document.getElementById('profile-grid-master').innerHTML = MASTER_CVS.map(m => `
+    mine.filter(p => p.group === 'focus').map(p => card(p, true)).join('');
+  document.getElementById('profile-grid-trackers').innerHTML = trackers.map(p => card(p, false)).join('');
+  document.getElementById('profile-grid-master').innerHTML = masters.map(m => `
       <button class="profile-card" onclick="openMasterCv('${m.key}')">
         <div class="profile-avatar" style="font-size:16px">${esc(m.avatar)}</div>
-        <span>${esc(m.label)}</span>
+        <span>${esc(m.label.replace(/^\w+ — /, ''))}</span>
       </button>`).join('');
+  ['sep-master', 'group-master'].forEach(id => document.getElementById(id).classList.toggle('hidden', masters.length === 0));
+  ['sep-trackers', 'group-trackers'].forEach(id => document.getElementById(id).classList.toggle('hidden', trackers.length === 0));
+}
+
+function showPerson(name) {
+  currentPerson = name;
+  renderPersonView();
+  document.getElementById('people-view').classList.add('hidden');
+  document.getElementById('person-view').classList.remove('hidden');
+  document.getElementById('profile-screen').scrollTop = 0;
+}
+
+function showPeople() {
+  currentPerson = null;
+  document.getElementById('person-view').classList.add('hidden');
+  document.getElementById('people-view').classList.remove('hidden');
 }
 
 // Each person's general-purpose CV, the base every tailored CV starts from.
@@ -741,9 +865,9 @@ function renderProfileGrid() {
 // so it needs no extra table. Update it by PATCHing that row's cv_content.
 // A variant (extra_content.variant) is a second master for the same person, e.g. reliability roles.
 const MASTER_CVS = [
-  { key: 'uk',     profile: 'uk',     avatar: 'X·CV', label: 'Xavier — Master CV', name: 'Xavier Sojan', file: 'Xavier_Sojan_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_General' },
-  { key: 'uk-reliability', profile: 'uk', variant: 'reliability', avatar: 'R·CV', label: 'Xavier — Reliability Master CV', name: 'Xavier Sojan', title: 'Reliability Master CV', file: 'Xavier_Sojan_Reliability_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_Reliability' },
-  { key: 'shamna', profile: 'shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV',     letterFile: 'Shamna_K_Cover_Letter_General' }
+  { key: 'uk',     profile: 'uk',     person: 'Xavier',     avatar: 'X·CV', label: 'Xavier — Master CV', name: 'Xavier Sojan', file: 'Xavier_Sojan_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_General' },
+  { key: 'uk-reliability', profile: 'uk', person: 'Xavier', variant: 'reliability', avatar: 'R·CV', label: 'Xavier — Reliability Master CV', name: 'Xavier Sojan', title: 'Reliability Master CV', file: 'Xavier_Sojan_Reliability_Master_CV', letterFile: 'Xavier_Sojan_Cover_Letter_Reliability' },
+  { key: 'shamna', profile: 'shamna', person: 'Shamna', avatar: 'S·CV', label: 'Shamna — Master CV', name: 'Shamna K',     file: 'Shamna_K_Master_CV',     letterFile: 'Shamna_K_Cover_Letter_General' }
 ];
 
 let masterState = null;
@@ -1137,6 +1261,8 @@ function setCourseStatus(s, btn) {
 }
 
 function showProfileScreen() {
+  const cur = PROFILES.find(x => x.id === currentProfile);
+  if (cur && cur.person && !document.getElementById('app').classList.contains('hidden')) showPerson(cur.person); else showPeople();
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.add('hidden');
   document.getElementById('profile-screen').classList.remove('hidden');
@@ -1707,7 +1833,7 @@ function atsClass(score) {
   return score >= 80 ? 'ats-high' : score >= 65 ? 'ats-mid' : 'ats-low';
 }
 
-// A hot view belongs to one person: Xavier's own profiles, or Shamna's.
+// A hot view belongs to one person: Xavier's own profiles, Shamna's or Sicily's.
 function jobProfilesFor(p) {
   const found = PROFILES.find(x => x.id === p);
   return (found && found.jobProfiles) || [p];

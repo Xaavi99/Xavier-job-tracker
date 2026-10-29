@@ -315,4 +315,5 @@ Before the summary, every job that is `hot=true` and has no `applications` row g
     8. **Coverage:** new eligible roles per source and per role family (O&M and asset, onshore analysis, project and planning, entry routes), from step 6b.
   - Verify the To field contains only his address before sending, then log it as `email` / `sent` with recipient iamxaviersojan@gmail.com and title `Sweep summary email`.
 - If Shamna's sweep ran, send her separate summary email as in `shamna-sweep.md` step 5.
+- If Sicily's sweep ran, add a short Sicily section to Xavier's summary (her own summary email is not enabled yet, see `sicily-sweep.md`).
 - Print a 5-line summary to stdout.
