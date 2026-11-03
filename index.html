@@ -75,6 +75,7 @@
   .s-Offer{background:rgba(200,255,87,0.12);color:var(--accent);border:1px solid rgba(200,255,87,0.25)}
   .s-Declined{background:rgba(255,92,92,0.08);color:var(--red);border:1px solid rgba(255,92,92,0.2)}
   .s-Rejected{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
+  .s-Closed{background:rgba(136,136,144,0.1);color:var(--muted);border:1px solid var(--border)}
   .inline-input{background:transparent;border:none;color:var(--text);font-family:var(--font-body);font-size:12px;width:100%;outline:none;padding:0}
   .inline-input::placeholder{color:#3a3a3e}
   .inline-input[type="date"]{color-scheme:dark;color:var(--muted)}
@@ -704,7 +705,7 @@ const SEED = [
 ];
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
-const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected'];
+const STATUSES = ['Interested','Applied','Interview','Offer','Declined','Rejected','Closed'];
 const COURSE_STATUSES = ['Not started','In progress','Completed'];
 const TRACK_BADGE = { europe: 'EU', phd: 'PHD' };
 let jobs = [];
@@ -1860,7 +1861,7 @@ function jobProfilesFor(p) {
   return (found && found.jobProfiles) || [p];
 }
 
-const HOT_DONE_STATUSES = ['Interview', 'Offer', 'Declined', 'Rejected'];
+const HOT_DONE_STATUSES = ['Interview', 'Offer', 'Declined', 'Rejected', 'Closed'];
 
 // Which hot job to apply to first. Scores urgency (deadline, early applicant
 // window), fit (ATS score, tier) and readiness (CV and letter built), and pushes
@@ -2000,7 +2001,7 @@ function renderHot() {
           ${(j.apply_url || j.link) ? `<a class="btn btn-accent" href="${esc(j.apply_url || j.link)}" target="_blank" rel="noopener">Apply now</a>` : ''}
           ${applicationsMap[j.id] ? `<button class="btn" onclick="openMaterials(${j.id})">CV &amp; letter</button>` : ''}
           ${j.link && j.apply_url && j.link !== j.apply_url ? `<a class="btn" href="${esc(j.link)}" target="_blank" rel="noopener">Posting</a>` : ''}
-          ${j.status === 'Applied' ? `<button class="btn" onclick="clearHot(${j.id})">Done with it</button>` : `<button class="btn" onclick="markHotApplied(${j.id})">Mark applied</button>`}
+          ${j.status === 'Applied' ? `<button class="btn" onclick="clearHot(${j.id})">Done with it</button>` : `<button class="btn" onclick="markHotApplied(${j.id})">Mark applied</button><button class="btn" onclick="markHotClosed(${j.id})">Job closed</button>`}
         </div>
       </div>`).join('')}</div>`;
     }).join('');
@@ -2030,6 +2031,16 @@ async function markHotApplied(id) {
   await updateJob(id, { status: 'Applied', date: today, hot: false });
   await logActivity({ kind: 'other', status: 'done', title: 'Marked applied: ' + j.role + ' at ' + j.company, job_id: id, profile: j.profile });
   showToast('Marked as applied');
+}
+
+async function markHotClosed(id) {
+  const j = jobs.find(x => x.id === id);
+  if (!j) return;
+  Object.assign(j, { status: 'Closed', hot: false });
+  renderHot();
+  await updateJob(id, { status: 'Closed', hot: false });
+  await logActivity({ kind: 'other', status: 'done', title: 'Marked closed: ' + j.role + ' at ' + j.company, job_id: id, profile: j.profile });
+  showToast('Marked as closed');
 }
 
 
