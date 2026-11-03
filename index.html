@@ -220,9 +220,23 @@
   .course-notes::placeholder{color:#3a3a3e}
   .hot-card{border-color:rgba(255,181,71,0.35)}
   .hot-reason{font-size:12px;color:var(--text);line-height:1.5}
-  .hot-action{font-size:12px;color:var(--amber);line-height:1.5;border-left:2px solid var(--amber);padding-left:8px}
+  .hot-action{font-size:12px;color:var(--amber);line-height:1.5;border-left:2px solid var(--amber);padding-left:8px;overflow-wrap:anywhere}
   .hot-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-start}
   .hot-btns .btn{font-size:11px;padding:4px 10px}
+  .hot-tabs{display:flex;gap:8px;margin:1.2rem 0 0.2rem}
+  .hot-tabs .filter-pill{font-size:12px;padding:6px 14px}
+  .hot-tabs .filter-pill span{margin-left:4px;opacity:0.75}
+  .hot-group-title{font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin:1.6rem 0 0.7rem;display:flex;align-items:center;gap:8px}
+  .hot-group-title span{font-size:10px;padding:1px 7px;border-radius:10px;border:1px solid var(--border2)}
+  .hot-group-today{color:var(--accent)}
+  .hot-group-week{color:var(--amber)}
+  .hot-today{border-color:rgba(200,255,87,0.4)}
+  .hot-check{opacity:0.6}
+  .hot-rank{font-family:var(--font-mono);font-size:11px;color:var(--accent-text);background:var(--accent);border-radius:4px;padding:1px 6px;margin-right:8px;vertical-align:middle}
+  .hot-check .hot-rank{background:var(--border2);color:var(--muted)}
+  .hot-why{display:flex;gap:5px;flex-wrap:wrap}
+  .prio-tag{font-family:var(--font-mono);font-size:10px;padding:2px 7px;border-radius:10px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+  .prio-tag.urgent{color:var(--amber);border-color:rgba(255,181,71,0.35)}
   .ats-tag{font-weight:600;cursor:help}
   .log-status-select{appearance:none;-webkit-appearance:none;cursor:pointer;justify-self:start;padding-right:18px;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 9px) 50%,calc(100% - 5px) 50%;background-size:4px 4px;background-repeat:no-repeat}
   .log-status-select option{background:var(--surface2);color:var(--text)}
@@ -540,6 +554,11 @@
 
 <div class="path-banner" id="hot-how"></div>
 
+<div class="hot-tabs">
+  <button class="filter-pill active" id="hot-tab-todo" onclick="setHotTab('todo')">To apply <span id="hot-n-todo">0</span></button>
+  <button class="filter-pill" id="hot-tab-applied" onclick="setHotTab('applied')">Applied <span id="hot-n-applied">0</span></button>
+</div>
+
 <div id="hot-list">
   <div class="loading"><div class="loading-spinner"></div><br>Loading from Supabase…</div>
 </div>
@@ -775,7 +794,7 @@ function frontBadge(p) {
   if (!frontCounts) return '';
   if (p.kind === 'hot') {
     const n = frontCounts.hot.filter(j => jobProfilesFor(p.id).includes(j.profile || 'uk')
-      && !HOT_DONE_STATUSES.includes(j.status)).length;
+      && !HOT_DONE_STATUSES.includes(j.status) && j.status !== 'Applied').length;
     return n === 0 ? '<span class="profile-badge">all clear</span>'
       : `<span class="profile-badge live">${n} need${n === 1 ? 's' : ''} you</span>`;
   }
@@ -802,7 +821,7 @@ function personBadge(name) {
   const mine = PROFILES.filter(p => p.person === name && p.group === 'focus');
   const hotScope = mine.filter(p => p.kind === 'hot').flatMap(p => jobProfilesFor(p.id));
   const logScope = mine.filter(p => p.kind === 'automation').flatMap(p => logProfilesFor(p.id));
-  const hot = frontCounts.hot.filter(j => hotScope.includes(j.profile || 'uk') && !HOT_DONE_STATUSES.includes(j.status)).length;
+  const hot = frontCounts.hot.filter(j => hotScope.includes(j.profile || 'uk') && !HOT_DONE_STATUSES.includes(j.status) && j.status !== 'Applied').length;
   const log = frontCounts.log.filter(x => logScope.includes(x.profile || 'uk')).length;
   if (hot + log === 0) return '<span class="profile-badge">all clear</span>';
   return (hot ? `<span class="profile-badge live">${hot} need${hot === 1 ? 's' : ''} you</span>` : '')
@@ -1843,26 +1862,131 @@ function jobProfilesFor(p) {
 
 const HOT_DONE_STATUSES = ['Interview', 'Offer', 'Declined', 'Rejected'];
 
+// Which hot job to apply to first. Scores urgency (deadline, early applicant
+// window), fit (ATS score, tier) and readiness (CV and letter built), and pushes
+// expired or already-applied jobs to the bottom.
+const HOT_GROUPS = [
+  { id: 'today', title: 'Apply today' },
+  { id: 'week',  title: 'This week' },
+  { id: 'later', title: 'When you can' },
+  { id: 'check', title: 'Check first: deadline passed' },
+];
+let hotTab = 'todo';   // 'todo' = still to apply, 'applied' = sent applications
+
+function setHotTab(t) {
+  hotTab = t;
+  renderHot();
+}
+
+function hotTier(j) {
+  if (j.tier) return j.tier;
+  const m = /Tier ([ABC])\b/.exec(j.notes || '');
+  return m ? m[1] : null;
+}
+
+function hotPriority(j) {
+  const text = `${j.hot_reason || ''} ${j.action_needed || ''}`;
+  const reasons = [];
+  let score = 0;
+  const day = 86400000;
+  const today = new Date(new Date().toDateString());
+  const daysLeft = j.deadline ? Math.round((new Date(j.deadline) - today) / day) : null;
+  if (j.status === 'Applied') return { score: -1000, group: 'check', reasons: ['already applied'] };
+  if (daysLeft !== null && daysLeft < 0) return { score: -500 + daysLeft, group: 'check', reasons: ['deadline passed'] };
+
+  if (daysLeft !== null && daysLeft <= 3) { score += 60; reasons.push(daysLeft === 0 ? 'closes today' : `closes in ${daysLeft}d`); }
+  else if (daysLeft !== null && daysLeft <= 7) { score += 40; reasons.push(`closes in ${daysLeft}d`); }
+  else if (daysLeft !== null && daysLeft <= 14) { score += 20; reasons.push(`closes in ${daysLeft}d`); }
+
+  const found = j.discovered_at ? (today - new Date(j.discovered_at)) / day : null;
+  // "early applicant" was true when the job was found; it fades over a week.
+  if (/\bEARLY\b|under 25 applicants|first 25/i.test(text) && found !== null && found <= 7) {
+    score += found <= 2 ? 35 : found <= 4 ? 25 : 12;
+    reasons.push('early applicant');
+  }
+  if (/dream/i.test(text)) { score += 40; reasons.push('dream job'); }
+  if (j.referral) { score += 20; reasons.push('referral'); }
+
+  const ats = applicationsMap[j.id]?.ats_score;
+  if (ats != null) score += Math.max(-20, Math.min(30, (ats - 65) * 1.5));   // the ATS tag is already shown on the card
+  const tier = hotTier(j);
+  if (tier === 'A') { score += 20; reasons.push('Tier A'); } else if (tier === 'B') score += 8;
+  if (applicationsMap[j.id] || j.cv_path) score += 10; else reasons.push('needs CV');
+  if (/licen[cs]e gap|visa sponsorship|check sponsor|confirm remote/i.test(`${text} ${j.notes || ''}`)) { score -= 10; reasons.push('check eligibility'); }
+
+  if (found !== null && found <= 3) { score += 10; reasons.push('new'); }
+
+  // Xavier only: his Graduate Visa ends Dec 2027, so graduate schemes (often
+  // 2027 intakes or 2-year programmes needing sponsorship) rank lower (3 Nov 2026).
+  // Junior roles and internships stay main targets and are not marked down.
+  const xavier = !['shamna', 'sicily', 'sicily-phd'].includes(j.profile || 'uk');
+  if (xavier && /graduate|trainee|early careers|apprentice/i.test(j.role || '') && !/junior|intern/i.test(j.role || '')) {
+    const scheme = /programme|program|scheme|2027|24-month|3-year|intake/i.test(j.role || '');
+    score -= scheme ? 45 : 30;
+    reasons.push('graduate role: visa ends Dec 2027');
+  }
+  else if (found !== null && found > 21) score -= 15;
+
+  const group = (daysLeft !== null && daysLeft <= 3) || score >= 60 ? 'today'
+    : (daysLeft !== null && daysLeft <= 7) || score >= 30 ? 'week' : 'later';
+  return { score, group, reasons };
+}
+
 function renderHot() {
   const scope = jobProfilesFor(currentProfile);
   const hot = jobs
     .filter(j => j.hot && !HOT_DONE_STATUSES.includes(j.status) && scope.includes(j.profile || 'uk'))
-    .sort((a, b) => (a.deadline || '9999').localeCompare(b.deadline || '9999')
-      || ((applicationsMap[b.id]?.ats_score ?? -1) - (applicationsMap[a.id]?.ats_score ?? -1))
-      || (a.tier || 'Z').localeCompare(b.tier || 'Z'));
+    .map(j => ({ j, p: hotPriority(j) }))
+    .sort((a, b) => b.p.score - a.p.score || (a.j.deadline || '9999').localeCompare(b.j.deadline || '9999'))
+    .filter(x => x.j.status !== 'Applied');   // applied jobs live in the Applied tab
+  const applied = jobs
+    .filter(j => j.status === 'Applied' && scope.includes(j.profile || 'uk'))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.id - a.id);
+  document.getElementById('hot-n-todo').textContent = hot.length;
+  document.getElementById('hot-n-applied').textContent = applied.length;
+  document.getElementById('hot-tab-todo').classList.toggle('active', hotTab === 'todo');
+  document.getElementById('hot-tab-applied').classList.toggle('active', hotTab === 'applied');
   const list = document.getElementById('hot-list');
-  if (hot.length === 0) {
-    list.innerHTML = '<div class="loading">nothing needs your action right now</div>';
-  } else {
-    list.innerHTML = `<div class="course-grid">${hot.map(j => `
-      <div class="course-card hot-card">
+  if (hotTab === 'applied') {
+    list.innerHTML = applied.length === 0 ? '<div class="loading">no applications yet</div>'
+      : `<div class="course-grid">${applied.map(j => `
+      <div class="course-card hot-card hot-applied">
         <div class="course-card-head">
           <div>
             <div class="course-title">${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener">${esc(j.role)}</a>` : esc(j.role)}</div>
             <div class="course-provider">${esc(j.company)}${j.location ? ' · ' + esc(j.location) : ''}</div>
           </div>
-          ${j.tier ? `<span class="tier-badge tier-${esc(j.tier)}">${esc(j.tier)}</span>` : ''}
+          ${hotTier(j) ? `<span class="tier-badge tier-${esc(hotTier(j))}">${esc(hotTier(j))}</span>` : ''}
         </div>
+        <div class="course-meta">
+          <span class="course-meta-tag" style="color:var(--accent)">applied${j.date ? ' ' + esc(j.date) : ''}</span>
+          ${applicationsMap[j.id] && applicationsMap[j.id].ats_score != null ? `<span class="course-meta-tag ats-tag ${atsClass(applicationsMap[j.id].ats_score)}">ATS ${applicationsMap[j.id].ats_score}</span>` : ''}
+          <span class="course-meta-tag">${esc(profileLabel(j.profile))}</span>
+        </div>
+        <div class="course-card-foot hot-btns">
+          ${applicationsMap[j.id] ? `<button class="btn" onclick="openMaterials(${j.id})">CV &amp; letter</button>` : ''}
+          ${j.link ? `<a class="btn" href="${esc(j.link)}" target="_blank" rel="noopener">Posting</a>` : ''}
+          ${j.hot ? `<button class="btn" onclick="clearHot(${j.id})">Done with it</button>` : ''}
+        </div>
+      </div>`).join('')}</div>`;
+  } else if (hot.length === 0) {
+    list.innerHTML = '<div class="loading">nothing needs your action right now</div>';
+  } else {
+    let rank = 0;
+    list.innerHTML = HOT_GROUPS.map(g => {
+      const items = hot.filter(x => x.p.group === g.id);
+      if (!items.length) return '';
+      return `<div class="hot-group-title hot-group-${g.id}">${esc(g.title)} <span>${items.length}</span></div>
+      <div class="course-grid">${items.map(({ j, p }) => `
+      <div class="course-card hot-card hot-${g.id}">
+        <div class="course-card-head">
+          <div>
+            <div class="course-title"><span class="hot-rank">${g.id === 'check' ? '·' : ++rank}</span>${j.link ? `<a href="${esc(j.link)}" target="_blank" rel="noopener">${esc(j.role)}</a>` : esc(j.role)}</div>
+            <div class="course-provider">${esc(j.company)}${j.location ? ' · ' + esc(j.location) : ''}</div>
+          </div>
+          ${hotTier(j) ? `<span class="tier-badge tier-${esc(hotTier(j))}">${esc(hotTier(j))}</span>` : ''}
+        </div>
+        ${p.reasons.length ? `<div class="hot-why">${p.reasons.map(r => `<span class="prio-tag${/closes|early|dream|passed/i.test(r) ? ' urgent' : ''}">${esc(r)}</span>`).join('')}</div>` : ''}
         <div class="course-meta">
           ${applicationsMap[j.id] && applicationsMap[j.id].ats_score != null ? `<span class="course-meta-tag ats-tag ${atsClass(applicationsMap[j.id].ats_score)}" title="${esc(applicationsMap[j.id].ats_notes || '')}">ATS ${applicationsMap[j.id].ats_score}</span>` : ''}
           <span class="course-meta-tag">${esc(profileLabel(j.profile))}</span>
@@ -1879,12 +2003,14 @@ function renderHot() {
           ${j.status === 'Applied' ? `<button class="btn" onclick="clearHot(${j.id})">Done with it</button>` : `<button class="btn" onclick="markHotApplied(${j.id})">Mark applied</button>`}
         </div>
       </div>`).join('')}</div>`;
+    }).join('');
   }
   const soon = new Date(); soon.setDate(soon.getDate() + 14);
-  document.getElementById('h-st-total').textContent = hot.length;
-  document.getElementById('h-st-soon').textContent = hot.filter(j => j.deadline && new Date(j.deadline) <= soon).length;
-  document.getElementById('h-st-a').textContent = hot.filter(j => j.tier === 'A').length;
-  document.getElementById('h-st-mat').textContent = hot.filter(j => applicationsMap[j.id]).length;
+  const jobsOnly = hot.map(x => x.j);
+  document.getElementById('h-st-total').textContent = jobsOnly.length;
+  document.getElementById('h-st-soon').textContent = jobsOnly.filter(j => j.deadline && new Date(j.deadline) <= soon).length;
+  document.getElementById('h-st-a').textContent = jobsOnly.filter(j => hotTier(j) === 'A').length;
+  document.getElementById('h-st-mat').textContent = jobsOnly.filter(j => applicationsMap[j.id]).length;
 }
 
 async function clearHot(id) {
